@@ -31,9 +31,15 @@
     "web": "expo start --web"
   },
   "expo": {
-    "web": {
-      "bundler": "metro"
-    }
+  "web": {
+    "bundler": "metro"
   },
+  "android": {
+    "package": "com.umwizerwa.mavie"
+  },
+  "ios": {
+    "bundleIdentifier": "com.umwizerwa.mavie"
+  }
+},
   "private": true
 }
