@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../navigation/types";
+import type { RootStackParamList } from "../../navigation/AppNavigator";
 import { SLIDES, Slide } from "../../constants/onboardingSlides";
-import SlideVisualCard from "../../components/SlidesVisualCard";
+import { ONBOARDING_VISUALS } from "../../components/onboardingVisuals";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Onboarding">;
 
@@ -29,21 +29,30 @@ export default function OnboardingScreen({ navigation }: Props) {
     setIndex(i);
   };
 
-  const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
-    <View className="flex-1 items-center pt-8 px-6 pb-2" style={{ width }}>
-      <Text className="text-textPrimary text-[22px] font-bold text-center mb-2.5">
-        {item.title}
-      </Text>
-      <Text className="text-textSecondary text-sm text-center leading-5 mb-5">
-        {item.description}
-      </Text>
+  const renderItem = ({ item, index: i }: ListRenderItemInfo<Slide>) => {
+    const Visual = ONBOARDING_VISUALS[i];
+    return (
+      <View className="flex-1 items-center pt-8 px-6 pb-2" style={{ width }}>
+        <Text className="text-textPrimary text-[22px] font-bold text-center mb-2.5">
+          {item.title}
+        </Text>
+        <Text className="text-textSecondary text-sm text-center leading-5 mb-5">
+          {item.description}
+        </Text>
 
-      <SlideVisualCard icon={item.icon} accent={item.accent} caption={item.caption} />
-    </View>
-  );
+        <Visual />
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
+       <View className="h-[3px] rounded-full bg-progressTrack overflow-hidden">
+          <View
+            className="h-full bg-primary"
+            style={{ width: `${((index + 1) / SLIDES.length) * 100}%` }}
+          />
+        </View>
       <FlatList
         ref={listRef}
         data={SLIDES}
@@ -61,7 +70,7 @@ export default function OnboardingScreen({ navigation }: Props) {
       <View className="px-6 pb-4 gap-4">
         <View className="flex-row justify-center gap-3">
           <Pressable
-            className="w-10 h-10 rounded-full bg-card items-center justify-center"
+            className="w-10 h-10 rounded-full bg-card items-center justify-center border-radius-full"
             onPress={() => goTo(index - 1)}
             disabled={index === 0}
           >
@@ -69,7 +78,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           </Pressable>
 
           <Pressable
-            className="w-10 h-10 rounded-full bg-card items-center justify-center"
+            className="w-10 h-10 rounded-full bg-card items-center justify-center border-radius-full"
             onPress={() => goTo(index + 1)}
             disabled={isLast}
           >
@@ -77,13 +86,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           </Pressable>
         </View>
 
-        <View className="h-[3px] rounded-full bg-progressTrack overflow-hidden">
-          <View
-            className="h-full bg-primary"
-            style={{ width: `${((index + 1) / SLIDES.length) * 100}%` }}
-          />
-        </View>
-      </View>
+       </View>
     </SafeAreaView>
   );
 }

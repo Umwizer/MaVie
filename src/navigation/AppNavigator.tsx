@@ -1,36 +1,27 @@
 import { NavigationContainer } from "@react-navigation/native";
-import {
-  createNativeStackNavigator,
-  type NativeStackTypeBag,
-} from "@react-navigation/native-stack";
-import type { ComponentType } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import WelcomeScreen from "../screens/onbording/WelcomeScreen";
 import OnboardingScreen from "../screens/onbording/OnboardingScreen";
-import type { RootStackParamList } from "./types";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const Stack = createNativeStackNavigator<
-  RootStackParamList,
-  undefined,
-  NativeStackTypeBag<RootStackParamList, undefined>
->();
+export type RootStackParamList = {
+  Onboarding: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Welcome"
-        screenOptions={{ headerShown: false, animation: "fade" }}
-      >
-        <Stack.Screen
-          name="Welcome"
-          component={WelcomeScreen as ComponentType}
-        />
-        <Stack.Screen
-          name="Onboarding"
-          component={OnboardingScreen as ComponentType}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaView style={{ flex: 1 , backgroundColor: "black"}}>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Onboarding"
+          screenOptions={{ headerShown: false, animation: "fade" }}
+        >
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaView>
   );
 }
+ 
