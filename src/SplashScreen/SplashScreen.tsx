@@ -18,7 +18,7 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex bg-black w-100">
+    <View className="flex-1 bg-black w-100">
       <StatusBar style="light" />
 
       <ImageBackground

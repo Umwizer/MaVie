@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../navigation/types";
+import type { RootStackParamList } from "../../types/types";
 import { colors } from "../../constants/theme";
 import { SLIDES, Slide } from "../../constants/onboardingSlides";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,16 +32,23 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
     <View style={[styles.slide, { width }]}>
-      <View style={styles.iconWrap}>
-        <Ionicons name={item.icon} size={100} color={colors.primary} />
-      </View>
+      
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.description}>{item.description}</Text>
+
+      <View style={styles.iconWrap}>
+        <Ionicons name={item.icon} size={350} color={colors.primary} />
+      </View>
+      
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
+    
+      <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${((index + 1) / SLIDES.length) * 100}%` }]} />
+        </View>
       <FlatList
         ref={listRef}
         data={SLIDES}
@@ -66,29 +73,26 @@ export default function OnboardingScreen({ navigation }: Props) {
             <Ionicons name="chevron-forward" size={20} color={isLast ? colors.navInactive : colors.textPrimary} />
           </Pressable>
         </View>
-
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${((index + 1) / SLIDES.length) * 100}%` }]} />
         </View>
-      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  container: { flex: 1, backgroundColor: colors.background, },
   slide: { alignItems: "center", justifyContent: "center", paddingHorizontal: 32 },
   iconWrap: {
-    width: 120,
-    height: 120,
+    width: 350,
+    height: 350,
     borderRadius: 24,
     backgroundColor: colors.cardBackground,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 32,
+    marginTop: 50,
   },
-  title: { color: colors.textPrimary, fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 12 },
-  description: { color: colors.textSecondary, fontSize: 14, textAlign: "center", lineHeight: 20 },
+  title: { color: colors.textPrimary, fontSize: 25, fontWeight: "700", textAlign: "center", marginBottom: 12 },
+  description: { color: colors.textSecondary, fontSize: 18, textAlign: "center", lineHeight: 20 },
   footer: { paddingHorizontal: 24, paddingBottom: 16, gap: 16 },
   navRow: { flexDirection: "row", justifyContent: "center", gap: 12 },
   navBtn: {
@@ -99,6 +103,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  progressTrack: { height: 3, borderRadius: 2, backgroundColor: colors.progressTrack, overflow: "hidden" },
+  progressTrack: { height: 3, borderRadius: 2, backgroundColor: colors.progressTrack, overflow: "hidden", marginTop: 20 },
   progressFill: { height: "100%", backgroundColor: colors.primary },
 });
