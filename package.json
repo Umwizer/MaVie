@@ -34,10 +34,6 @@
     "web": "expo start --web"
   },
   "expo": {
-<<<<<<< HEAD
-  "web": {
-    "bundler": "metro"
-=======
     "web": {
       "bundler": "metro"
     },
@@ -47,14 +43,12 @@
     "ios": {
       "bundleIdentifier": "com.umwizerwa.mavie"
     }
->>>>>>> 1b203a25d2f08ee0dd23e9c2fa7035ba583a9b5a
   },
   "android": {
     "package": "com.umwizerwa.mavie"
   },
   "ios": {
     "bundleIdentifier": "com.umwizerwa.mavie"
-  }
-},
+  },
   "private": true
 }
