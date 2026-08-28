@@ -1,70 +1,22 @@
-  import { NavigationContainer } from "@react-navigation/native";
-  import { createNativeStackNavigator } from "@react-navigation/native-stack";
-  import { ActivityIndicator, View } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-  import { useAuth } from "../Context/AuthContext";
-  import { useTheme } from "../Context/ThemeContext";
+import WelcomeScreen from "../screens/onbording/WelcomeScreen";
+import OnboardingScreen from "../screens/onbording/OnboardingScreen";
+import type { RootStackParamList } from "./types";
 
-  import OnboardingScreen from "../screens/onbording/OnboardingScreen";
-  import LoginScreen from "../screens/auth/LoginScreen";
-  import SignupScreen from "../screens/auth/SignupScreen";
-  import HomeScreen from "../screens/home/HomeScreen";
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-  import type { RootStackParamList } from "../types/types";
-
-  const Stack = createNativeStackNavigator<RootStackParamList>();
-
-  export default function AppNavigator() {
-    const { user, initializing } = useAuth();
-    const { colors } = useTheme();
-
-    if (initializing) {
-      return (
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.background,
-          }}
-        >
-          <ActivityIndicator color={colors.primary} />
-        </View>
-      );
-    }
-
-    return (
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            animation: "fade",
-          }}
-        >
-          {user ? (
-            <Stack.Screen
-              name="Home"
-              component={HomeScreen}
-            />
-          ) : (
-            <>
-              <Stack.Screen
-                name="Onboarding"
-                component={OnboardingScreen}
-              />
-
-              <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-              />
-
-              <Stack.Screen
-                name="Signup"
-                component={SignupScreen}
-              />
-            </>
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-  }
+export default function AppNavigator() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Welcome"
+        screenOptions={{ headerShown: false, animation: "fade" }}
+      >
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
