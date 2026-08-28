@@ -79,10 +79,15 @@ export default function OnboardingScreen({ navigation }: Props) {
 
           <Pressable
             className="w-10 h-10 rounded-full bg-card items-center justify-center border-radius-full"
-            onPress={() => goTo(index + 1)}
-            disabled={isLast}
+            onPress={() => {
+              if (isLast) {
+                navigation.navigate("ProfileSetup");
+                return;
+              }
+              goTo(index + 1);
+            }}
           >
-            <Ionicons name="chevron-forward" size={20} color={isLast ? "#3A4256" : "#FFFFFF"} />
+            <Ionicons name="chevron-forward" size={20} color="#FFFFFF" />
           </Pressable>
         </View>
 
