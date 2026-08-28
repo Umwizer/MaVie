@@ -1,12 +1,12 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   initializeAuth,
-  getReactNativePersistence,
   getAuth,
+   // @ts-ignore — getReactNativePersistence exists at runtime; firebase's type defs don't export it yet (firebase-js-sdk#9316)
+  getReactNativePersistence,
   type Auth,
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -15,14 +15,14 @@ const firebaseConfig = {
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
-
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 let auth: Auth;
 try {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(AsyncStorage),
   });
-} catch {
+} catch (error) {
+  console.log("[firebase] initializeAuth fallback reason:", error);
   auth = getAuth(app);
 }
 

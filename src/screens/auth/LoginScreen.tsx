@@ -43,8 +43,8 @@ export default function LoginScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.logoDot} />
-        <Text style={styles.brand}>asklepios</Text>
-        <Text style={styles.subtitle}>Sign in to access all-in-one intelligent health</Text>
+        <Text style={styles.brand}>MaVie</Text>
+        {/* <Text style={styles.subtitle}>Sign in to access all-in-one intelligent health</Text> */}
       </View>
 
       {authError && (

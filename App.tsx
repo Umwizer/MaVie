@@ -1,4 +1,3 @@
-import "./global.css";
 import { useState } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useAppReady } from "./src/loadingpage/loading";

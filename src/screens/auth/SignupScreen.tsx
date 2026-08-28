@@ -29,23 +29,26 @@ export default function SignupScreen({ navigation }: Props) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const { control, handleSubmit, watch, formState: { errors } } = useForm<FormValues>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormValues>({
+    mode: "onBlur",
     defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
   const password = watch("password");
   const strength = useMemo(() => getStrength(password || ""), [password]);
 
-  const onSubmit = async ({ email, password, confirmPassword }: FormValues) => {
-    if (password !== confirmPassword) {
-      setAuthError("Passwords do not match");
-      return;
-    }
+  const onSubmit = async ({ email, password }: FormValues) => {
     setAuthError(null);
     setSubmitting(true);
     try {
       await signUp(email, password);
     } catch (e: any) {
+      console.log("[signup] raw error:", e); // TEMP — remove once persistence/auth is confirmed working
       setAuthError(e.message);
     } finally {
       setSubmitting(false);
@@ -58,51 +61,74 @@ export default function SignupScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.logoDot} />
-        <Text style={styles.brand}>asklepios</Text>
-        <Text style={styles.subtitle}>Sign up to get your health personalized</Text>
+        <Text style={styles.brand}>MaVie</Text>
       </View>
 
-      {authError && <Text style={styles.fieldError}>{authError}</Text>}
+      {authError && (
+        <View style={styles.errorBanner}>
+          <Text style={styles.errorBannerText}>ERROR: {authError}</Text>
+        </View>
+      )}
 
+      {/* Email */}
       <Text style={styles.label}>Email Address</Text>
       <Controller
         control={control}
         name="email"
-        rules={{ required: true, pattern: /^\S+@\S+\.\S+$/ }}
-        render={({ field: { onChange, value } }) => (
+        rules={{
+          required: "Email is required",
+          pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: "Enter a valid email address",
+          },
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.email && styles.inputError]}
             placeholder="Enter your email address..."
             placeholderTextColor={colors.textSecondary}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
             value={value}
             onChangeText={onChange}
+            onBlur={onBlur}
           />
         )}
       />
-      {errors.email && <Text style={styles.fieldError}>Enter a valid email</Text>}
+      {errors.email && <Text style={styles.fieldError}>{errors.email.message}</Text>}
 
+      {/* Password */}
       <Text style={styles.label}>Password</Text>
       <Controller
         control={control}
         name="password"
-        rules={{ required: true, minLength: 6 }}
-        render={({ field: { onChange, value } }) => (
+        rules={{
+          required: "Password is required",
+          minLength: { value: 8, message: "Use at least 8 characters" },
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.password && styles.inputError]}
             placeholder="••••••••"
             placeholderTextColor={colors.textSecondary}
             secureTextEntry
             value={value}
             onChangeText={onChange}
+            onBlur={onBlur}
           />
         )}
       />
-      {!!password && (
+      {errors.password && <Text style={styles.fieldError}>{errors.password.message}</Text>}
+      {!!password && !errors.password && (
         <View style={styles.strengthRow}>
           <View style={styles.strengthTrack}>
-            <View style={[styles.strengthFill, { width: `${strength.score * 25}%`, backgroundColor: strength.color }]} />
+            <View
+              style={[
+                styles.strengthFill,
+                { width: `${strength.score * 25}%`, backgroundColor: strength.color },
+              ]}
+            />
           </View>
           <Text style={[styles.strengthLabel, { color: strength.color }]}>
             Password strength: {strength.label}
@@ -110,25 +136,37 @@ export default function SignupScreen({ navigation }: Props) {
         </View>
       )}
 
+      {/* Confirm password */}
       <Text style={styles.label}>Confirm Password</Text>
       <Controller
         control={control}
         name="confirmPassword"
-        rules={{ required: true }}
-        render={({ field: { onChange, value } }) => (
+        rules={{
+          required: "Please confirm your password",
+          validate: (value) => value === password || "Passwords do not match",
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.confirmPassword && styles.inputError]}
             placeholder="••••••••"
             placeholderTextColor={colors.textSecondary}
             secureTextEntry
             value={value}
             onChangeText={onChange}
+            onBlur={onBlur}
           />
         )}
       />
+      {errors.confirmPassword && (
+        <Text style={styles.fieldError}>{errors.confirmPassword.message}</Text>
+      )}
 
-      <Pressable style={styles.primaryBtn} onPress={handleSubmit(onSubmit)} disabled={submitting}>
-        <Text style={styles.primaryBtnText}>{submitting ? "Signing Up..." : "Sign Up →"}</Text>
+      <Pressable
+        style={[styles.primaryBtn, submitting && styles.primaryBtnDisabled]}
+        onPress={handleSubmit(onSubmit)}
+        disabled={submitting}
+      >
+        <Text style={styles.primaryBtnText}>{submitting ? "Signing Up..." : "Sign Up"}</Text>
       </Pressable>
 
       <View style={styles.footerRow}>
@@ -148,14 +186,26 @@ function createStyles(colors: ReturnType<typeof useTheme>["colors"]) {
     logoDot: { width: 40, height: 40, borderRadius: 12, backgroundColor: colors.primary, marginBottom: 8 },
     brand: { color: colors.textPrimary, fontSize: 20, fontWeight: "700" },
     subtitle: { color: colors.textSecondary, fontSize: 13, marginTop: 4, textAlign: "center" },
+    errorBanner: { backgroundColor: colors.error, borderRadius: 10, padding: 10, marginBottom: 16 },
+    errorBannerText: { color: "#fff", fontSize: 13, fontWeight: "600" },
     label: { color: colors.textSecondary, fontSize: 12, marginBottom: 6, marginTop: 12 },
-    input: { backgroundColor: colors.cardBackground, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, color: colors.textPrimary, borderWidth: 1, borderColor: colors.border },
+    input: {
+      backgroundColor: colors.cardBackground,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.textPrimary,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    inputError: { borderColor: colors.error },
     fieldError: { color: colors.error, fontSize: 12, marginTop: 4 },
     strengthRow: { marginTop: 8, gap: 4 },
     strengthTrack: { height: 4, borderRadius: 2, backgroundColor: colors.progressTrack, overflow: "hidden" },
     strengthFill: { height: "100%" },
     strengthLabel: { fontSize: 12, fontWeight: "600" },
     primaryBtn: { backgroundColor: colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 24 },
+    primaryBtnDisabled: { opacity: 0.6 },
     primaryBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
     footerRow: { flexDirection: "row", justifyContent: "center", marginTop: 24 },
     footerText: { color: colors.textSecondary, fontSize: 13 },

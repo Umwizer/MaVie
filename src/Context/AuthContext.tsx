@@ -19,8 +19,6 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-// Firebase error codes -> messages that match your Figma error banner
 function friendlyError(code: string): string {
   switch (code) {
     case "auth/invalid-email":
@@ -55,14 +53,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
     } catch (e: any) {
+      console.log("[AuthContext] signUp error code:", e.code, "| message:", e.message); 
       throw new Error(friendlyError(e.code));
     }
   };
 
   const signUp = async (email: string, password: string) => {
     try {
+      
       await createUserWithEmailAndPassword(auth, email.trim(), password);
     } catch (e: any) {
+      console.log("[AuthContext] signUp error code:", e.code, "| message:", e.message); 
       throw new Error(friendlyError(e.code));
     }
   };
@@ -73,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await sendPasswordResetEmail(auth, email.trim());
     } catch (e: any) {
+        console.log("[AuthContext] signUp error code:", e.code, "| message:", e.message); 
       throw new Error(friendlyError(e.code));
     }
   };
