@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import {
   ImageBackground,
   Pressable,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -18,13 +19,13 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
   const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 bg-black w-100">
+    <View style={styles.container}>
       <StatusBar style="light" />
 
       <ImageBackground
         source={HERO_IMAGE}
         resizeMode="cover"
-        className="flex-1 justify-end"
+        style={styles.background}
       >
         <LinearGradient
           colors={[
@@ -33,26 +34,33 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
             "rgba(0,0,0,0.85)",
           ]}
           locations={[0, 0.55, 1]}
-          className="absolute inset-0"
+          style={StyleSheet.absoluteFill}
         />
 
         <View
-          className="gap-2 px-6"
-          style={{ paddingBottom: insets.bottom + 24 }}
+          style={[
+            styles.content,
+            {
+              paddingBottom: insets.bottom + 24,
+            },
+          ]}
         >
-          <Text className="text-4xl font-semibold leading-tight text-white">
+          <Text style={styles.title}>
             Wellness Starts Here.
           </Text>
 
-          <Text className="mb-5 text-base leading-snug text-white/85">
+          <Text style={styles.description}>
             Track appointments, meds, meals and habits — all in one place.
           </Text>
 
           <Pressable
             onPress={onGetStarted}
-            className="items-center rounded-full bg-white py-4 active:opacity-85"
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+            ]}
           >
-            <Text className="text-base font-semibold text-neutral-900">
+            <Text style={styles.buttonText}>
               Get Started
             </Text>
           </Pressable>
@@ -62,8 +70,56 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
   );
 }
 
-export default function SplashScreenView({ onGetStarted }: WelcomeScreenProps) {
-  return (
-    <WelcomeScreen onGetStarted={onGetStarted} />
-  );
+export default function SplashScreenView({
+  onGetStarted,
+}: WelcomeScreenProps) {
+  return <WelcomeScreen onGetStarted={onGetStarted} />;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+
+  background: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+
+  content: {
+    paddingHorizontal: 24,
+    gap: 8,
+  },
+
+  title: {
+    fontSize: 36,
+    lineHeight: 43,
+    fontWeight: "600",
+    color: "#FFFFFF",
+  },
+
+  description: {
+    marginBottom: 20,
+    fontSize: 16,
+    lineHeight: 22,
+    color: "rgba(255,255,255,0.85)",
+  },
+
+  button: {
+    alignItems: "center",
+    borderRadius: 999,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 16,
+  },
+
+  buttonPressed: {
+    opacity: 0.85,
+  },
+
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#171717",
+  },
+});
