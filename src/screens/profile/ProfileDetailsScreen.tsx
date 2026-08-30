@@ -2,7 +2,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Image,
   PanResponder,
@@ -18,6 +18,22 @@ import type { RootStackParamList } from "../../navigation/AppNavigator";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProfileDetails">;
 type IconName = keyof typeof Ionicons.glyphMap;
+type CountryOption = { name: string; flag: string; code: string };
+
+const DEFAULT_COUNTRY: CountryOption = { name: "Rwanda", flag: "🇷🇼", code: "+250" };
+const DEFAULT_CITIES: Record<string, string[]> = {
+  Rwanda: ["Kigali", "Musanze", "Huye", "Rubavu", "Muhanga", "Nyagatare"],
+  Uganda: ["Kampala", "Entebbe", "Jinja", "Mbarara", "Gulu"],
+  Kenya: ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret"],
+  Tanzania: ["Dodoma", "Dar es Salaam", "Arusha", "Mwanza", "Zanzibar City"],
+  Burundi: ["Bujumbura", "Gitega", "Ngozi", "Rumonge"],
+  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
+  "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool", "Bristol"],
+  Canada: ["Toronto", "Montreal", "Vancouver", "Calgary", "Ottawa"],
+  "South Africa": ["Johannesburg", "Cape Town", "Durban", "Pretoria", "Gqeberha"],
+  India: ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Kolkata"],
+};
+const DEFAULT_CITY_BY_COUNTRY: Record<string, string[]> = DEFAULT_CITIES;
 
 const allergyOptions = [
   "None",
@@ -38,30 +54,79 @@ const allergyOptions = [
   "12+",
 ];
 const visibleAllergies = ["None", "Pollen", "Dust"];
-const countries = [
-  { name: "Rwanda", flag: "🇷🇼", code: "+250" },
-  { name: "Uganda", flag: "🇺🇬", code: "+256" },
-  { name: "Kenya", flag: "🇰🇪", code: "+254" },
-  { name: "Tanzania", flag: "🇹🇿", code: "+255" },
-  { name: "Burundi", flag: "🇧🇮", code: "+257" },
-  { name: "United States", flag: "🇺🇸", code: "+1" },
-  { name: "United Kingdom", flag: "🇬🇧", code: "+44" },
-  { name: "Canada", flag: "🇨🇦", code: "+1" },
-  { name: "South Africa", flag: "🇿🇦", code: "+27" },
-  { name: "India", flag: "🇮🇳", code: "+91" },
-];
-const citiesByCountry: Record<string, string[]> = {
-  Rwanda: ["Kigali", "Musanze", "Huye", "Rubavu", "Muhanga", "Nyagatare"],
-  Uganda: ["Kampala", "Entebbe", "Jinja", "Mbarara", "Gulu"],
-  Kenya: ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret"],
-  Tanzania: ["Dodoma", "Dar es Salaam", "Arusha", "Mwanza", "Zanzibar City"],
-  Burundi: ["Bujumbura", "Gitega", "Ngozi", "Rumonge"],
-  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
-  "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool", "Bristol"],
-  Canada: ["Toronto", "Montreal", "Vancouver", "Calgary", "Ottawa"],
-  "South Africa": ["Johannesburg", "Cape Town", "Durban", "Pretoria", "Gqeberha"],
-  India: ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Kolkata"],
+
+const fetchCountries = async (): Promise<CountryOption[]> => {
+  try {
+    const response = await fetch("https://restcountries.com/v3.1/all?fields=name,flags,idd");
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch countries");
+    }
+
+    const data = await response.json();
+
+    return data
+      .map((country: any) => {
+        const name = country?.name?.common ?? "";
+        const flag = country?.flags?.emoji ?? "";
+        const callingCode = country?.idd?.callingCodes?.[0] ?? "";
+
+        return {
+          name,
+          flag,
+          code: callingCode ? `+${callingCode}` : "",
+        };
+      })
+      .filter((country: CountryOption) => country.name && country.flag)
+      .sort((a: CountryOption, b: CountryOption) => a.name.localeCompare(b.name));
+  } catch (error) {
+    console.warn("Falling back to default countries due to API error:", error);
+    return Object.keys(DEFAULT_CITIES).map((name) => {
+      const fallback = {
+        Rwanda: { name: "Rwanda", flag: "🇷🇼", code: "+250" },
+        Uganda: { name: "Uganda", flag: "🇺🇬", code: "+256" },
+        Kenya: { name: "Kenya", flag: "🇰🇪", code: "+254" },
+        Tanzania: { name: "Tanzania", flag: "🇹🇿", code: "+255" },
+        Burundi: { name: "Burundi", flag: "🇧🇮", code: "+257" },
+        "United States": { name: "United States", flag: "🇺🇸", code: "+1" },
+        "United Kingdom": { name: "United Kingdom", flag: "🇬🇧", code: "+44" },
+        Canada: { name: "Canada", flag: "🇨🇦", code: "+1" },
+        "South Africa": { name: "South Africa", flag: "🇿🇦", code: "+27" },
+        India: { name: "India", flag: "🇮🇳", code: "+91" },
+      } as Record<string, CountryOption>;
+
+      return fallback[name as keyof typeof fallback] ?? DEFAULT_COUNTRY;
+    });
+  }
 };
+
+const fetchCitiesByCountry = async (): Promise<Record<string, string[]>> => {
+  try {
+    const response = await fetch("https://countriesnow.space/api/v0.1/countries");
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch cities");
+    }
+
+    const data = await response.json();
+    const list = Array.isArray(data?.data) ? data.data : [];
+
+    return list.reduce((acc: Record<string, string[]>, item: any) => {
+      const countryName = item?.country ?? item?.name ?? "";
+      const cities = Array.isArray(item?.cities) ? item.cities : [];
+
+      if (countryName) {
+        acc[countryName] = cities;
+      }
+
+      return acc;
+    }, {});
+  } catch (error) {
+    console.warn("Falling back to default cities due to API error:", error);
+    return DEFAULT_CITIES;
+  }
+};
+
 const genders = ["Female", "Male", "Non-binary", "Prefer not to say"];
 const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const insuranceProviders = [
@@ -74,6 +139,8 @@ const insuranceProviders = [
 ];
 
 export default function ProfileDetailsScreen({ navigation }: Props) {
+  const [countries, setCountries] = useState<CountryOption[]>([DEFAULT_COUNTRY]);
+  const [citiesByCountry, setCitiesByCountry] = useState<Record<string, string[]>>(DEFAULT_CITY_BY_COUNTRY);
   const [allergies, setAllergies] = useState<string[]>(["None"]);
   const [notes, setNotes] = useState(
     "I have been feeling well lately, and I don't know why my health has been so much, please help me, doc.",
@@ -82,8 +149,8 @@ export default function ProfileDetailsScreen({ navigation }: Props) {
   const [isProviderPickerOpen, setIsProviderPickerOpen] = useState(false);
   const [insuranceCardName, setInsuranceCardName] = useState("");
   const [profileImageUri, setProfileImageUri] = useState("");
-  const [country, setCountry] = useState(countries[0]);
-  const [city, setCity] = useState("Kigali");
+  const [country, setCountry] = useState<CountryOption>(DEFAULT_COUNTRY);
+  const [city, setCity] = useState(DEFAULT_CITIES.Rwanda[0]);
   const [phone, setPhone] = useState("");
   const [gender, setGender] = useState("Female");
   const [bloodType, setBloodType] = useState("O+");
@@ -93,6 +160,39 @@ export default function ProfileDetailsScreen({ navigation }: Props) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [height, setHeight] = useState(165);
   const [weight, setWeight] = useState(65);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCountryData = async () => {
+      try {
+        const [countryOptions, countryCities] = await Promise.all([
+          fetchCountries(),
+          fetchCitiesByCountry(),
+        ]);
+
+        if (!isMounted) return;
+
+        const nextCountries = countryOptions.length > 0 ? countryOptions : [DEFAULT_COUNTRY];
+        const nextCountry = nextCountries.find((option) => option.name === "Rwanda") ?? nextCountries[0];
+        const nextCities = { ...DEFAULT_CITIES, ...countryCities };
+        const nextCityList = nextCities[nextCountry.name] ?? DEFAULT_CITIES[nextCountry.name] ?? ["Kigali"];
+
+        setCountries(nextCountries);
+        setCitiesByCountry(nextCities);
+        setCountry(nextCountry);
+        setCity(nextCityList[0]);
+      } catch (error) {
+        console.warn("Unable to load country data:", error);
+      }
+    };
+
+    loadCountryData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const chooseProfileImage = async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -194,11 +294,13 @@ export default function ProfileDetailsScreen({ navigation }: Props) {
         <Text className="mb-2 mt-3 text-[14px] font-semibold text-white">Address & contact</Text>
         <CountryPickerField
           country={country}
+          options={countries}
           open={openPicker === "country"}
           onToggle={() => setOpenPicker(openPicker === "country" ? null : "country")}
           onSelect={(selectedCountry) => {
             setCountry(selectedCountry);
-            setCity("");
+            const nextCities = citiesByCountry[selectedCountry.name] ?? [];
+            setCity(nextCities[0] ?? "");
             setOpenPicker(null);
           }}
         />
@@ -379,14 +481,16 @@ function DateField({ value, onPress }: { value: Date; onPress: () => void }) {
 
 function CountryPickerField({
   country,
+  options,
   open,
   onToggle,
   onSelect,
 }: {
-  country: (typeof countries)[number];
+  country: CountryOption;
+  options: CountryOption[];
   open: boolean;
   onToggle: () => void;
-  onSelect: (country: (typeof countries)[number]) => void;
+  onSelect: (country: CountryOption) => void;
 }) {
   return (
     <View className="mb-3">
@@ -401,7 +505,7 @@ function CountryPickerField({
           className="mt-1 max-h-44 rounded-lg border border-progressTrack bg-card px-2"
           nestedScrollEnabled
         >
-          {countries.map((option) => (
+          {options.map((option) => (
             <Pressable
               key={option.name}
               className="flex-row items-center border-b border-progressTrack py-2 last:border-b-0"
