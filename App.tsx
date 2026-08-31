@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 import { User, onAuthStateChanged } from "firebase/auth"; // <- added User here
 import { auth } from "./src/services/firebase";
@@ -46,5 +47,18 @@ export default function App() {
         </SafeAreaView>
       </SafeAreaProvider>
     </AuthProvider>
+=======
+// App.tsx
+
+import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AppNavigator from './src/navigation/AppNavigator';
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppNavigator />
+    </SafeAreaProvider>
+>>>>>>> comprehensive-health-assessment
   );
 }

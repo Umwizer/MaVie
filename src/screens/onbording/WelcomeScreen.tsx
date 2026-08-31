@@ -1,108 +1,228 @@
-import { useRef, useState } from "react";
+// src/screens/onbording/WelcomeScreen.tsx
+
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
-  Pressable,
-  Dimensions,
-  ListRenderItemInfo,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../navigation/types";
-import { colors } from "../../constants/theme";
-import { SLIDES, Slide } from "../../constants/onboardingSlides";
-import { SafeAreaView } from "react-native-safe-area-context";
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { StatusBar } from 'expo-status-bar';
+import type { RootStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<RootStackParamList, "Onboarding">;
+type WelcomeScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Welcome'
+>;
 
-const { width } = Dimensions.get("window");
+const WelcomeScreen = () => {
+  const navigation = useNavigation<WelcomeScreenNavigationProp>();
+  const systemColorScheme = useColorScheme();
+  const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
 
-export default function OnboardingScreen({ navigation }: Props) {
-  const [index, setIndex] = useState(0);
-  const listRef = useRef<FlatList>(null);
-  const isLast = index === SLIDES.length - 1;
+  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  const statusBarStyle: 'light' | 'dark' = isDarkMode ? 'light' : 'dark';
 
-  const goTo = (i: number) => {
-    if (i < 0 || i >= SLIDES.length) return;
-    listRef.current?.scrollToIndex({ index: i, animated: true });
-    setIndex(i);
+  const colors = {
+    background: isDarkMode ? '#050A14' : '#FFFFFF',
+    textPrimary: isDarkMode ? '#FFFFFF' : '#1A1A1A',
+    textSecondary: isDarkMode ? '#8A94A6' : '#666666',
+    accent: '#4A6FFF',
+    lineColor: isDarkMode ? '#1F2937' : '#E0E0E0',
   };
 
-  const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
-    <View style={[styles.slide, { width }]}>
-      
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
+  const handleReady = () => {
+    navigation.navigate('OnboardingReady');
+  };
 
-      <View style={styles.iconWrap}>
-        <Ionicons name={item.icon} size={350} color={colors.primary} />
-      </View>
-      
-    </View>
-  );
+  const handleHelp = () => {
+    console.log('Help pressed!');
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-    
-      <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${((index + 1) / SLIDES.length) * 100}%` }]} />
-        </View>
-      <FlatList
-        ref={listRef}
-        data={SLIDES}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={(_, i) => String(i)}
-        renderItem={renderItem}
-        onMomentumScrollEnd={(e) => {
-          const i = Math.round(e.nativeEvent.contentOffset.x / width);
-          setIndex(i);
-        }}
-      />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={statusBarStyle} />
 
-      <View style={styles.footer}>
-        <View style={styles.navRow}>
-          <Pressable style={styles.navBtn} onPress={() => goTo(index - 1)} disabled={index === 0}>
-            <Ionicons name="chevron-back" size={20} color={index === 0 ? colors.navInactive : colors.textPrimary} />
-          </Pressable>
+      {/* Top Progress Bar */}
+      <View style={styles.progressContainer}>
+        {/* The horizontal line behind the circles */}
+        <View style={[styles.progressLine, { backgroundColor: colors.lineColor }]} />
+        
+        {/* Assessment (Active) */}
+        <View style={styles.progressItem}>
+          <View style={[styles.circle, { borderColor: colors.accent, backgroundColor: colors.background }]}>
+            <View style={[styles.circleDot, { backgroundColor: colors.accent }]} />
+          </View>
+          <Text style={[styles.label, { color: colors.textPrimary }]}>Assessment</Text>
+        </View>
+        {/* Personal Info (Inactive) */}
+        <View style={styles.progressItem}>
+          <View style={[styles.circle, { borderColor: colors.lineColor, backgroundColor: colors.background }]} />
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Personal Info</Text>
+        </View>
+        {/* Choose Plan (Inactive) */}
+        <View style={styles.progressItem}>
+          <View style={[styles.circle, { borderColor: colors.lineColor, backgroundColor: colors.background }]} />
+          <Text style={[styles.label, { color: colors.textSecondary }]}>Choose Plan</Text>
+        </View>
+      </View>
 
-          <Pressable style={styles.navBtn} onPress={() => goTo(index + 1)} disabled={isLast}>
-            <Ionicons name="chevron-forward" size={20} color={isLast ? colors.navInactive : colors.textPrimary} />
-          </Pressable>
+      {/* Dark Mode Toggle BELOW the Progress Bar */}
+      <View style={styles.toggleContainer}>
+        <TouchableOpacity onPress={toggleDarkMode} style={styles.themeToggle}>
+          <Text style={styles.themeToggleText}>
+            {isDarkMode ? '☀️' : '🌙'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
+        {/* Big Plus Icon */}
+        <View style={styles.logoContainer}>
+          <Text style={[styles.logoText, { color: colors.accent }]}>+</Text>
         </View>
-        </View>
+
+        {/* Title with ONLY MaVie in Blue */}
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          Let's fully set up your{'\n'}<Text style={{ color: colors.accent }}>MaVie</Text> account.
+        </Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Here's what we'll do over the next minutes.
+        </Text>
+
+        {/* Big Blue "I'm Ready" Button */}
+        <TouchableOpacity
+          style={styles.readyButton}
+          onPress={handleReady}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.readyButtonText}>I'm Ready  →</Text>
+        </TouchableOpacity>
+
+        {/* Blue "I need help" Link */}
+        <TouchableOpacity onPress={handleHelp} style={styles.helpButton}>
+          <Text style={[styles.helpText, { color: colors.accent }]}>
+            ⓘ  I need help
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, },
-  slide: { alignItems: "center", justifyContent: "center", paddingHorizontal: 32 },
-  iconWrap: {
-    width: 350,
-    height: 350,
-    borderRadius: 24,
-    backgroundColor: colors.cardBackground,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 32,
-    marginTop: 50,
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
   },
-  title: { color: colors.textPrimary, fontSize: 25, fontWeight: "700", textAlign: "center", marginBottom: 12 },
-  description: { color: colors.textSecondary, fontSize: 18, textAlign: "center", lineHeight: 20 },
-  footer: { paddingHorizontal: 24, paddingBottom: 16, gap: 16 },
-  navRow: { flexDirection: "row", justifyContent: "center", gap: 12 },
-  navBtn: {
-    width: 40,
-    height: 40,
+  progressContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginTop: 20,
+    marginBottom: 10,
+    position: 'relative',
+  },
+  progressLine: {
+    position: 'absolute',
+    top: 8,
+    left: '10%',
+    right: '10%',
+    height: 2,
+  },
+  progressItem: {
+    flex: 1,
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  circle: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circleDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 6,
+  },
+  toggleContainer: {
+    alignItems: 'flex-end',
+    paddingRight: 8,
+    marginBottom: 20,
+  },
+  themeToggle: {
+    padding: 8,
+  },
+  themeToggleText: {
+    fontSize: 24,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
     borderRadius: 20,
-    backgroundColor: colors.cardBackground,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  progressTrack: { height: 3, borderRadius: 2, backgroundColor: colors.progressTrack, overflow: "hidden", marginTop: 20 },
-  progressFill: { height: "100%", backgroundColor: colors.primary },
+  logoText: {
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  readyButton: {
+    width: '100%',
+    borderRadius: 30,
+    backgroundColor: '#4A6FFF',
+    paddingVertical: 16,
+    alignItems: 'center',
+    shadowColor: '#4A6FFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  readyButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  helpButton: {
+    marginTop: 20,
+    padding: 10,
+  },
+  helpText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
 });
+
+export default WelcomeScreen;
