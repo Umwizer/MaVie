@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../types/types";
+import type { RootStackParamList } from "../../navigation/types";
 import { colors } from "../../constants/theme";
 import { SLIDES, Slide } from "../../constants/onboardingSlides";
 import { SafeAreaView } from "react-native-safe-area-context";

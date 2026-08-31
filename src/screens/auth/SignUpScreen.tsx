@@ -7,6 +7,16 @@ import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../constants/theme";
 import type { RootStackParamList } from "../../navigation/types";
 
+<<<<<<< HEAD
+
+type Props = NativeStackScreenProps<RootStackParamList, "signUp">;
+type FormValues = {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+=======
 type Props = NativeStackScreenProps<RootStackParamList, "Signup">;
 type FormValues = { email: string; password: string; confirmPassword: string };
 
@@ -21,8 +31,9 @@ function getStrength(password: string) {
   if (score === 3) return { label: "Good", score: 3, color: "#3B82F6" };
   return { label: "Amazing", score: 4, color: "#22C55E" };
 }
+>>>>>>> 68d0b0b81d392a8cb7455d598a47a5aa1bca5532
 
-export default function SignupScreen({ navigation }: Props) {
+export default function SignUpScreen({ navigation, route }: Props) { // <- ADDED route HERE
   const { signUp } = useAuth();
   const [authError, setAuthError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -68,6 +79,32 @@ export default function SignupScreen({ navigation }: Props) {
       {errors.email && <Text style={styles.fieldError}>{errors.email.message}</Text>}
 
       <Text style={styles.label}>Password</Text>
+<<<<<<< HEAD
+      <View style={[styles.passwordRow, errors.password && styles.inputError]}>
+        <Controller
+          control={control}
+          name="password"
+          rules={{
+            required: "Password is required",
+            minLength: { value: 8, message: "Password must be at least 8 characters" },
+          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="••••"
+              placeholderTextColor={colors.textSecondary}
+              secureTextEntry={!showPassword}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+          )}
+        />
+        <Pressable onPress={() => setShowPassword((s) => !s)}>
+          <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color={colors.textSecondary} />
+        </Pressable>
+      </View>
+=======
       <Controller
         control={control}
         name="password"
@@ -76,6 +113,7 @@ export default function SignupScreen({ navigation }: Props) {
           <TextInput style={[styles.input, errors.password && styles.inputError]} placeholder="••••••••" placeholderTextColor={colors.textSecondary} secureTextEntry value={value} onChangeText={onChange} onBlur={onBlur} />
         )}
       />
+>>>>>>> 68d0b0b81d392a8cb7455d598a47a5aa1bca5532
       {errors.password && <Text style={styles.fieldError}>{errors.password.message}</Text>}
       {!!password && !errors.password && (
         <View style={styles.strengthRow}>
@@ -85,6 +123,32 @@ export default function SignupScreen({ navigation }: Props) {
       )}
 
       <Text style={styles.label}>Confirm Password</Text>
+<<<<<<< HEAD
+      <View style={[styles.passwordRow, errors.confirmPassword && styles.inputError]}>
+        <Controller
+          control={control}
+          name="confirmPassword"
+          rules={{
+            required: "Please confirm your password",
+            validate: (value) => value === passwordValue || "Passwords do not match",
+          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="••••"
+              placeholderTextColor={colors.textSecondary}
+              secureTextEntry={!showConfirmPassword}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+          )}
+        />
+        <Pressable onPress={() => setShowConfirmPassword((s) => !s)}>
+          <Ionicons name={showConfirmPassword ? "eye-off" : "eye"} size={20} color={colors.textSecondary} />
+        </Pressable>
+      </View>
+=======
       <Controller
         control={control}
         name="confirmPassword"
@@ -93,6 +157,7 @@ export default function SignupScreen({ navigation }: Props) {
           <TextInput style={[styles.input, errors.confirmPassword && styles.inputError]} placeholder="••••••••" placeholderTextColor={colors.textSecondary} secureTextEntry value={value} onChangeText={onChange} onBlur={onBlur} />
         )}
       />
+>>>>>>> 68d0b0b81d392a8cb7455d598a47a5aa1bca5532
       {errors.confirmPassword && <Text style={styles.fieldError}>{errors.confirmPassword.message}</Text>}
 
       <Pressable style={[styles.primaryBtn, submitting && styles.primaryBtnDisabled]} onPress={handleSubmit(onSubmit)} disabled={submitting}>
