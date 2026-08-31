@@ -129,7 +129,7 @@ export default function LoginScreen({ navigation }: Props) {
 
       <View style={styles.footerRow}>
         <Text style={styles.footerText}>Don't have an account? </Text>
-        <Pressable onPress={() => navigation.navigate("Signup")}>
+        <Pressable onPress={() => navigation.navigate("signUp")}>
           <Text style={styles.link}>Sign Up</Text>
         </Pressable>
       </View>

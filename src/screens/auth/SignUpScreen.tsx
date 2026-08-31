@@ -8,7 +8,8 @@ import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../constants/theme";
 import type { RootStackParamList } from "../../navigation/types";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Signup">;
+
+type Props = NativeStackScreenProps<RootStackParamList, "signUp">;
 type FormValues = {
   fullName: string;
   email: string;
@@ -16,7 +17,7 @@ type FormValues = {
   confirmPassword: string;
 };
 
-export default function SignupScreen({ navigation }: Props) {
+export default function SignUpScreen({ navigation, route }: Props) { // <- ADDED route HERE
   const { signUp } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -105,7 +106,7 @@ export default function SignupScreen({ navigation }: Props) {
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.passwordInput}
-              placeholder="••••••••"
+              placeholder="••••"
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showPassword}
               value={value}
@@ -132,7 +133,7 @@ export default function SignupScreen({ navigation }: Props) {
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               style={styles.passwordInput}
-              placeholder="••••••••"
+              placeholder="••••"
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showConfirmPassword}
               value={value}
