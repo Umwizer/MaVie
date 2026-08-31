@@ -1,27 +1,13 @@
-import "./global.css";
-import { useState } from "react";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { useAppReady } from "./src/loadingpage/loading";
-import AppNavigator from "./src/navigation/AppNavigator";
-import SplashScreen from "./src/SplashScreen/SplashScreen";
+// App.tsx
+
+import React from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
-  const { appIsReady, onLayoutRootView } = useAppReady();
-  const [hasStarted, setHasStarted] = useState(false);
-
-  if (!appIsReady) {
-    return null;
-  }
-
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      <SafeAreaView style={{ flex: 1 }}>
-        {hasStarted ? (
-          <AppNavigator />
-        ) : (
-          <SplashScreen onGetStarted={() => setHasStarted(true)} />
-        )}
-      </SafeAreaView>
+    <SafeAreaProvider>
+      <AppNavigator />
     </SafeAreaProvider>
   );
 }
