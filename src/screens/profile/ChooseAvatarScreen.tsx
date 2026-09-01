@@ -1,25 +1,31 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import type { RootStackParamList } from "../../navigation/AppNavigator";
+import type { RootStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ChooseAvatar">;
+
+const avatars = ["#B8A8C0","#B89C7D","#F04D4D","#5B5A82","#4E815A","#D4A52D",
+  "#9BC5E2","#B8A8C0","#4F8D96","#A08C7B","#7EA784","#C06A9B",
+];
 
 export default function ChooseAvatarScreen({ navigation }: Props) {
   const [avatarIndex, setAvatarIndex] = useState(0);
   const [selectedAvatar, setSelectedAvatar] = useState(0);
-  const avatars = [
-    "#B8A8C0", "#B89C7D", "#F04D4D", "#5B5A82", "#4E815A",
-    "#D4A52D", "#9BC5E2", "#B8A8C0", "#4F8D96", "#A08C7B",
-    "#7EA784", "#C06A9B",
-  ];
 
   const changeAvatar = (direction: number) => {
     setAvatarIndex((current) => {
-      const nextIndex = (current + direction + avatars.length) % avatars.length;
+      const nextIndex =
+        (current + direction + avatars.length) % avatars.length;
+
       setSelectedAvatar(nextIndex);
       return nextIndex;
     });
@@ -32,37 +38,37 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-background px-5">
+    <SafeAreaView style={styles.container}>
       <Pressable
-        className="absolute right-5 top-4 z-10 p-2"
+        style={styles.skipButton}
         onPress={() => navigation.navigate("Onboarding")}
       >
-        <Text className="text-[14px] text-primary">Skip</Text>
+        <Text style={styles.skipText}>Skip</Text>
       </Pressable>
-      <View className="flex-1 items-center pt-14">
-        <Text className="text-center text-[20px] font-semibold text-white">
-          Choose Avatars
-        </Text>
+
+      <View style={styles.content}>
+        <Text style={styles.title}>Choose Avatars</Text>
+
         <Ionicons name="caret-down" size={18} color="#2F6FED" />
 
-        <View className="mt-7 h-32 w-full flex-row items-center justify-center gap-3">
+        <View style={styles.avatarRow}>
           {visibleAvatarIndexes.map((index, position) => {
             const isSelected = index === selectedAvatar;
+
             return (
               <Pressable
                 key={`${index}-${position}`}
-                style={{
-                  width: isSelected ? 112 : 68,
-                  height: isSelected ? 112 : 68,
-                  borderRadius: isSelected ? 56 : 34,
-                  borderWidth: isSelected ? 2 : 0,
-                  borderColor: "#2F6FED",
-                  backgroundColor: avatars[index],
-                  opacity: isSelected ? 1 : 0.55,
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  overflow: "hidden",
-                }}
+                style={[
+                  styles.avatarButton,
+                  {
+                    width: isSelected ? 112 : 68,
+                    height: isSelected ? 112 : 68,
+                    borderRadius: isSelected ? 56 : 34,
+                    borderWidth: isSelected ? 2 : 0,
+                    opacity: isSelected ? 1 : 0.55,
+                    backgroundColor: avatars[index],
+                  },
+                ]}
                 onPress={() => {
                   setSelectedAvatar(index);
                   setAvatarIndex(index);
@@ -75,36 +81,47 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
           })}
         </View>
 
-        <View className="mt-3 flex-row gap-10">
-          <Pressable onPress={() => changeAvatar(-1)} accessibilityLabel="Previous avatars">
+        <View style={styles.navigationButtons}>
+          <Pressable
+            onPress={() => changeAvatar(-1)}
+            accessibilityLabel="Previous avatars"
+            hitSlop={10}
+          >
             <Ionicons name="caret-back" size={18} color="#2F6FED" />
           </Pressable>
-          <Pressable onPress={() => changeAvatar(1)} accessibilityLabel="Next avatars">
+
+          <Pressable
+            onPress={() => changeAvatar(1)}
+            accessibilityLabel="Next avatars"
+            hitSlop={10}
+          >
             <Ionicons name="caret-forward" size={18} color="#2F6FED" />
           </Pressable>
         </View>
-        <Text className="mt-3 text-[14px] text-white">
+
+        <Text style={styles.counter}>
           {avatarIndex + 1} of {avatars.length}
         </Text>
       </View>
 
-      <View className="pb-5">
+      <View style={styles.footer}>
         <Pressable
-          className="mb-3 h-11 items-center justify-center rounded-lg bg-primary"
+          style={styles.continueButton}
           onPress={() => navigation.navigate("Onboarding")}
         >
-          <View className="flex-row items-center gap-2">
-            <Text className="text-[14px] font-semibold text-white">Continue</Text>
+          <View style={styles.buttonContent}>
+            <Text style={styles.continueText}>Continue</Text>
             <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
           </View>
         </Pressable>
+
         <Pressable
-          className="h-10 items-center justify-center rounded-lg border border-primary"
+          style={styles.backButton}
           onPress={() => navigation.navigate("ProfileDetails")}
         >
-          <View className="flex-row items-center gap-2">
+          <View style={styles.buttonContent}>
             <Ionicons name="arrow-back" size={13} color="#2F6FED" />
-            <Text className="text-[14px] font-semibold text-primary">Go Back</Text>
+            <Text style={styles.backText}>Go Back</Text>
           </View>
         </Pressable>
       </View>
@@ -112,13 +129,26 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
   );
 }
 
-function AvatarArtwork({ index, large }: { index: number; large: boolean }) {
+function AvatarArtwork({
+  index,
+  large,
+}: {
+  index: number;
+  large: boolean;
+}) {
   const scale = large ? 1 : 0.6;
+
   const skinColors = ["#8D5524", "#F1C27D", "#C68642", "#FFDBAC"];
   const shirtColors = ["#2F6FED", "#E94B4B", "#20A39E", "#6C4AB6"];
 
   return (
-    <View style={{ width: 78 * scale, height: 88 * scale, alignItems: "center" }}>
+    <View
+      style={{
+        width: 78 * scale,
+        height: 88 * scale,
+        alignItems: "center",
+      }}
+    >
       <View
         style={{
           position: "absolute",
@@ -143,6 +173,7 @@ function AvatarArtwork({ index, large }: { index: number; large: boolean }) {
             backgroundColor: "#17213B",
           }}
         />
+
         <View
           style={{
             position: "absolute",
@@ -154,6 +185,7 @@ function AvatarArtwork({ index, large }: { index: number; large: boolean }) {
             backgroundColor: "#17213B",
           }}
         />
+
         <View
           style={{
             position: "absolute",
@@ -166,6 +198,7 @@ function AvatarArtwork({ index, large }: { index: number; large: boolean }) {
           }}
         />
       </View>
+
       <View
         style={{
           position: "absolute",
@@ -180,3 +213,106 @@ function AvatarArtwork({ index, large }: { index: number; large: boolean }) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0F172A", // Replace with your background color
+    paddingHorizontal: 20,
+  },
+
+  skipButton: {
+    position: "absolute",
+    top: 16,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+  },
+
+  skipText: {
+    fontSize: 14,
+    color: "#2F6FED",
+  },
+
+  content: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: 56,
+  },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  avatarRow: {
+    width: "100%",
+    height: 128,
+    marginTop: 28,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+
+  avatarButton: {
+    alignItems: "center",
+    justifyContent: "flex-end",
+    overflow: "hidden",
+    borderColor: "#2F6FED",
+  },
+
+  navigationButtons: {
+    flexDirection: "row",
+    gap: 40,
+    marginTop: 12,
+  },
+
+  counter: {
+    marginTop: 12,
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+  footer: {
+    paddingBottom: 20,
+  },
+
+  continueButton: {
+    height: 44,
+    marginBottom: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    backgroundColor: "#2F6FED",
+  },
+
+  backButton: {
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#2F6FED",
+    borderRadius: 8,
+  },
+
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  continueText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  backText: {
+    color: "#2F6FED",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+});

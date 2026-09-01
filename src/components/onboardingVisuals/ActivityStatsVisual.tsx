@@ -1,5 +1,6 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants/theme"; // adjust path
 
 const ACTIVITIES = [
   { name: "Jogging", icon: "walk" as const, intensity: "Intense", color: "#F43F5E", intensityIcon: "heart" as const },
@@ -10,16 +11,16 @@ const ACTIVITIES = [
 
 export default function ActivityStatsVisual() {
   return (
-    <View className="flex-1 w-full justify-center">
-      <View className="flex-row flex-wrap justify-between gap-3">
+    <View style={styles.container}>
+      <View style={styles.grid}>
         {ACTIVITIES.map((a) => (
-          <View key={a.name} className="w-[47%] bg-card rounded-2xl p-4 mb-1">
-            <Text className="text-textSecondary text-[11px] mb-3">asklepios</Text>
+          <View key={a.name} style={styles.card}>
+            <Text style={styles.brandText}>asklepios</Text>
             <Ionicons name={a.icon} size={28} color="#FFFFFF" />
-            <Text className="text-textPrimary text-base font-semibold mt-3 mb-1">{a.name}</Text>
-            <View className="flex-row items-center gap-1">
+            <Text style={styles.activityName}>{a.name}</Text>
+            <View style={styles.intensityRow}>
               <Ionicons name={a.intensityIcon} size={12} color={a.color} />
-              <Text style={{ color: a.color }} className="text-xs font-medium">{a.intensity}</Text>
+              <Text style={[styles.intensityText, { color: a.color }]}>{a.intensity}</Text>
             </View>
           </View>
         ))}
@@ -27,3 +28,45 @@ export default function ActivityStatsVisual() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 12, // if gap errors, use marginBottom: 12 on card instead
+  },
+  card: {
+    width: "47%", // w-[47%]
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12, // replaces mb-1 + gap fallback
+  },
+  brandText: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    marginBottom: 12,
+  },
+  activityName: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  intensityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4, // if gap errors, add marginRight: 4 to Ionicons
+  },
+  intensityText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+});

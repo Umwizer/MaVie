@@ -1,39 +1,117 @@
 import { Feather, Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import MapView, {
+  Marker,
+  MapPressEvent,
+  Region,
+} from "react-native-maps";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Image,
-  PanResponder,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
-import type { RootStackParamList } from "../../navigation/AppNavigator";
+import type { RootStackParamList } from "../../navigation/types";
 
-type Props = NativeStackScreenProps<RootStackParamList, "ProfileDetails">;
-type IconName = keyof typeof Ionicons.glyphMap;
-type CountryOption = { name: string; flag: string; code: string };
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  "ProfileDetails"
+>;
 
-const DEFAULT_COUNTRY: CountryOption = { name: "Rwanda", flag: "🇷🇼", code: "+250" };
-const DEFAULT_CITIES: Record<string, string[]> = {
-  Rwanda: ["Kigali", "Musanze", "Huye", "Rubavu", "Muhanga", "Nyagatare"],
-  Uganda: ["Kampala", "Entebbe", "Jinja", "Mbarara", "Gulu"],
-  Kenya: ["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret"],
-  Tanzania: ["Dodoma", "Dar es Salaam", "Arusha", "Mwanza", "Zanzibar City"],
-  Burundi: ["Bujumbura", "Gitega", "Ngozi", "Rumonge"],
-  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
-  "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool", "Bristol"],
-  Canada: ["Toronto", "Montreal", "Vancouver", "Calgary", "Ottawa"],
-  "South Africa": ["Johannesburg", "Cape Town", "Durban", "Pretoria", "Gqeberha"],
-  India: ["Mumbai", "Delhi", "Bengaluru", "Hyderabad", "Kolkata"],
+type Country = {
+  name: string;
+  flag: string;
+  code: string;
 };
-const DEFAULT_CITY_BY_COUNTRY: Record<string, string[]> = DEFAULT_CITIES;
+
+type Coordinates = {
+  latitude: number;
+  longitude: number;
+};
+
+/* ============================================================
+   DATA
+============================================================ */
+
+const countries: Country[] = [
+  {
+    name: "Rwanda",
+    flag: "🇷🇼",
+    code: "+250",
+  },
+  {
+    name: "Uganda",
+    flag: "🇺🇬",
+    code: "+256",
+  },
+  {
+    name: "Kenya",
+    flag: "🇰🇪",
+    code: "+254",
+  },
+  {
+    name: "Tanzania",
+    flag: "🇹🇿",
+    code: "+255",
+  },
+  {
+    name: "Burundi",
+    flag: "🇧🇮",
+    code: "+257",
+  },
+  {
+    name: "South Africa",
+    flag: "🇿🇦",
+    code: "+27",
+  },
+  {
+    name: "United States",
+    flag: "🇺🇸",
+    code: "+1",
+  },
+  {
+    name: "United Kingdom",
+    flag: "🇬🇧",
+    code: "+44",
+  },
+  {
+    name: "Canada",
+    flag: "🇨🇦",
+    code: "+1",
+  },
+  {
+    name: "India",
+    flag: "🇮🇳",
+    code: "+91",
+  },
+];
+
+const genders = [
+  "Female",
+  "Male",
+  "Non-binary",
+  "Prefer not to say",
+];
+
+const bloodTypes = [
+  "A+",
+  "A-",
+  "B+",
+  "B-",
+  "AB+",
+  "AB-",
+  "O+",
+  "O-",
+];
 
 const allergyOptions = [
   "None",
@@ -51,84 +129,8 @@ const allergyOptions = [
   "Wheat",
   "Soy",
   "Medicine",
-  "12+",
 ];
-const visibleAllergies = ["None", "Pollen", "Dust"];
 
-const fetchCountries = async (): Promise<CountryOption[]> => {
-  try {
-    const response = await fetch("https://restcountries.com/v3.1/all?fields=name,flags,idd");
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch countries");
-    }
-
-    const data = await response.json();
-
-    return data
-      .map((country: any) => {
-        const name = country?.name?.common ?? "";
-        const flag = country?.flags?.emoji ?? "";
-        const callingCode = country?.idd?.callingCodes?.[0] ?? "";
-
-        return {
-          name,
-          flag,
-          code: callingCode ? `+${callingCode}` : "",
-        };
-      })
-      .filter((country: CountryOption) => country.name && country.flag)
-      .sort((a: CountryOption, b: CountryOption) => a.name.localeCompare(b.name));
-  } catch (error) {
-    console.warn("Falling back to default countries due to API error:", error);
-    return Object.keys(DEFAULT_CITIES).map((name) => {
-      const fallback = {
-        Rwanda: { name: "Rwanda", flag: "🇷🇼", code: "+250" },
-        Uganda: { name: "Uganda", flag: "🇺🇬", code: "+256" },
-        Kenya: { name: "Kenya", flag: "🇰🇪", code: "+254" },
-        Tanzania: { name: "Tanzania", flag: "🇹🇿", code: "+255" },
-        Burundi: { name: "Burundi", flag: "🇧🇮", code: "+257" },
-        "United States": { name: "United States", flag: "🇺🇸", code: "+1" },
-        "United Kingdom": { name: "United Kingdom", flag: "🇬🇧", code: "+44" },
-        Canada: { name: "Canada", flag: "🇨🇦", code: "+1" },
-        "South Africa": { name: "South Africa", flag: "🇿🇦", code: "+27" },
-        India: { name: "India", flag: "🇮🇳", code: "+91" },
-      } as Record<string, CountryOption>;
-
-      return fallback[name as keyof typeof fallback] ?? DEFAULT_COUNTRY;
-    });
-  }
-};
-
-const fetchCitiesByCountry = async (): Promise<Record<string, string[]>> => {
-  try {
-    const response = await fetch("https://countriesnow.space/api/v0.1/countries");
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch cities");
-    }
-
-    const data = await response.json();
-    const list = Array.isArray(data?.data) ? data.data : [];
-
-    return list.reduce((acc: Record<string, string[]>, item: any) => {
-      const countryName = item?.country ?? item?.name ?? "";
-      const cities = Array.isArray(item?.cities) ? item.cities : [];
-
-      if (countryName) {
-        acc[countryName] = cities;
-      }
-
-      return acc;
-    }, {});
-  } catch (error) {
-    console.warn("Falling back to default cities due to API error:", error);
-    return DEFAULT_CITIES;
-  }
-};
-
-const genders = ["Female", "Male", "Non-binary", "Prefer not to say"];
-const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const insuranceProviders = [
   "Rwanda Social Security Board (RSSB)",
   "Radiant Insurance",
@@ -138,146 +140,351 @@ const insuranceProviders = [
   "Britam Insurance Rwanda",
 ];
 
-export default function ProfileDetailsScreen({ navigation }: Props) {
-  const [countries, setCountries] = useState<CountryOption[]>([DEFAULT_COUNTRY]);
-  const [citiesByCountry, setCitiesByCountry] = useState<Record<string, string[]>>(DEFAULT_CITY_BY_COUNTRY);
-  const [allergies, setAllergies] = useState<string[]>(["None"]);
-  const [notes, setNotes] = useState(
-    "I have been feeling well lately, and I don't know why my health has been so much, please help me, doc.",
-  );
-  const [insuranceProvider, setInsuranceProvider] = useState("");
-  const [isProviderPickerOpen, setIsProviderPickerOpen] = useState(false);
-  const [insuranceCardName, setInsuranceCardName] = useState("");
-  const [profileImageUri, setProfileImageUri] = useState("");
-  const [country, setCountry] = useState<CountryOption>(DEFAULT_COUNTRY);
-  const [city, setCity] = useState(DEFAULT_CITIES.Rwanda[0]);
-  const [phone, setPhone] = useState("");
+/* Kigali */
+const DEFAULT_LOCATION: Coordinates = {
+  latitude: -1.9441,
+  longitude: 30.0619,
+};
+
+/* ============================================================
+   SCREEN
+============================================================ */
+
+export default function ProfileDetailsScreen({
+  navigation,
+}: Props) {
+  /* ---------------- Account ---------------- */
+
   const [gender, setGender] = useState("Female");
+
+  const [dateOfBirth, setDateOfBirth] = useState(
+    new Date(2000, 0, 9),
+  );
+
+  const [showDatePicker, setShowDatePicker] =
+    useState(false);
+
+  /* ---------------- Location ---------------- */
+
+  const [country, setCountry] = useState<Country>(
+    countries[0],
+  );
+
+  const [city, setCity] = useState("Kigali");
+
+  const [phone, setPhone] = useState("");
+
+  const [coordinates, setCoordinates] =
+    useState<Coordinates>(DEFAULT_LOCATION);
+
+  const [showMap, setShowMap] = useState(false);
+
+  /* ---------------- Personal info ---------------- */
+
   const [bloodType, setBloodType] = useState("O+");
-  const [openPicker, setOpenPicker] = useState<string | null>(null);
-  const [showAllergies, setShowAllergies] = useState(false);
-  const [dateOfBirth, setDateOfBirth] = useState(new Date(2000, 0, 9));
-  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const [selectedAllergies, setSelectedAllergies] =
+    useState<string[]>(["None"]);
+
+  const [showAllergies, setShowAllergies] =
+    useState(false);
+
   const [height, setHeight] = useState(165);
+
   const [weight, setWeight] = useState(65);
 
-  useEffect(() => {
-    let isMounted = true;
+  const [notes, setNotes] = useState("");
 
-    const loadCountryData = async () => {
-      try {
-        const [countryOptions, countryCities] = await Promise.all([
-          fetchCountries(),
-          fetchCitiesByCountry(),
-        ]);
+  /* ---------------- Pickers ---------------- */
 
-        if (!isMounted) return;
+  const [openPicker, setOpenPicker] =
+    useState<string | null>(null);
 
-        const nextCountries = countryOptions.length > 0 ? countryOptions : [DEFAULT_COUNTRY];
-        const nextCountry = nextCountries.find((option) => option.name === "Rwanda") ?? nextCountries[0];
-        const nextCities = { ...DEFAULT_CITIES, ...countryCities };
-        const nextCityList = nextCities[nextCountry.name] ?? DEFAULT_CITIES[nextCountry.name] ?? ["Kigali"];
+  /* ---------------- Profile image ---------------- */
 
-        setCountries(nextCountries);
-        setCitiesByCountry(nextCities);
-        setCountry(nextCountry);
-        setCity(nextCityList[0]);
-      } catch (error) {
-        console.warn("Unable to load country data:", error);
+  const [profileImage, setProfileImage] =
+    useState("");
+
+  /* ---------------- Insurance ---------------- */
+
+  const [insuranceProvider, setInsuranceProvider] =
+    useState("");
+
+  const [insuranceCard, setInsuranceCard] =
+    useState("");
+
+  /* ============================================================
+     PROFILE IMAGE
+  ============================================================ */
+
+  const chooseImage = async () => {
+    try {
+      const result =
+        await DocumentPicker.getDocumentAsync({
+          type: ["image/jpeg", "image/png"],
+          copyToCacheDirectory: true,
+          multiple: false,
+        });
+
+      if (!result.canceled) {
+        setProfileImage(result.assets[0].uri);
       }
-    };
-
-    loadCountryData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const chooseProfileImage = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/jpeg", "image/png"],
-      copyToCacheDirectory: true,
-      multiple: false,
-    });
-
-    if (!result.canceled) {
-      setProfileImageUri(result.assets[0].uri);
+    } catch (error) {
+      console.warn(
+        "Unable to select profile image:",
+        error,
+      );
     }
   };
+
+  /* ============================================================
+     INSURANCE CARD
+  ============================================================ */
 
   const chooseInsuranceCard = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/jpeg", "image/png", "application/pdf"],
-      copyToCacheDirectory: true,
-      multiple: false,
-    });
+    try {
+      const result =
+        await DocumentPicker.getDocumentAsync({
+          type: [
+            "image/jpeg",
+            "image/png",
+            "application/pdf",
+          ],
+          copyToCacheDirectory: true,
+          multiple: false,
+        });
 
-    if (!result.canceled) {
-      setInsuranceCardName(result.assets[0].name);
+      if (!result.canceled) {
+        setInsuranceCard(result.assets[0].name);
+      }
+    } catch (error) {
+      console.warn(
+        "Unable to select insurance card:",
+        error,
+      );
     }
   };
 
+  /* ============================================================
+     ALLERGIES
+  ============================================================ */
+
   const toggleAllergy = (value: string) => {
-    setAllergies((current) => {
-      if (value === "None") return current.includes("None") ? [] : ["None"];
-      return current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current.filter((item) => item !== "None"), value];
+    setSelectedAllergies((current) => {
+      if (value === "None") {
+        return current.includes("None")
+          ? []
+          : ["None"];
+      }
+
+      if (current.includes(value)) {
+        return current.filter(
+          (item) => item !== value,
+        );
+      }
+
+      return [
+        ...current.filter(
+          (item) => item !== "None",
+        ),
+        value,
+      ];
     });
   };
 
+  /* ============================================================
+     MAP LOCATION
+  ============================================================ */
+
+  const handleMapPress = async (
+    event: MapPressEvent,
+  ) => {
+    const {
+      latitude,
+      longitude,
+    } = event.nativeEvent.coordinate;
+
+    setCoordinates({
+      latitude,
+      longitude,
+    });
+
+    /*
+     * Reverse geocoding converts coordinates
+     * into country/city names.
+     *
+     * Example:
+     *
+     * -1.9441, 30.0619
+     *       ↓
+     * Kigali, Rwanda
+     */
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
+        {
+          headers: {
+            Accept: "application/json",
+            "User-Agent":
+              "HealthApp/1.0",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Reverse geocoding failed",
+        );
+      }
+
+      const data = await response.json();
+
+      const address = data?.address;
+
+      const detectedCountry =
+        address?.country ?? "";
+
+      const detectedCity =
+        address?.city ??
+        address?.town ??
+        address?.village ??
+        address?.municipality ??
+        address?.county ??
+        "";
+
+      /* Country */
+
+      if (detectedCountry) {
+        const matchingCountry =
+          countries.find(
+            (item) =>
+              item.name.toLowerCase() ===
+              detectedCountry.toLowerCase(),
+          );
+
+        if (matchingCountry) {
+          setCountry(matchingCountry);
+        } else {
+          setCountry({
+            name: detectedCountry,
+            flag: "🌍",
+            code: "",
+          });
+        }
+      }
+
+      /* City */
+
+      if (detectedCity) {
+        setCity(detectedCity);
+      }
+    } catch (error) {
+      console.warn(
+        "Could not determine city/country:",
+        error,
+      );
+    }
+  };
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
+
   return (
-    <SafeAreaView className="flex-1 bg-background px-7">
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="light" />
+
       <ScrollView
-        contentContainerStyle={{ paddingTop: 16, paddingBottom: 32, }}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <View className="z-10 mb-6 mt-2 items-center overflow-visible">
-          <View
-            className="mb-5 items-center justify-center rounded-full"
-            style={{ width: 112, height: 112, padding: 4, backgroundColor: "rgba(47,111,237,0.2)" }}
-          >
-            <View
-              className="items-center justify-center rounded-full"
-              style={{ width: 104, height: 104, borderRadius: 52, borderWidth: 2, borderColor: "#000000", backgroundColor: "#87CEEB" }}
-            >
-              {profileImageUri ? (
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
+
+        <View style={styles.header}>
+          <View style={styles.avatarWrapper}>
+            <View style={styles.avatar}>
+              {profileImage ? (
                 <Image
-                  source={{ uri: profileImageUri }}
-                  className="rounded-full"
-                  style={{ width: 100, height: 100 }}
-                  resizeMode="cover"
+                  source={{
+                    uri: profileImage,
+                  }}
+                  style={styles.avatarImage}
                 />
               ) : (
-                <Ionicons name="person" size={40} color="#2F80ED" />
+                <Ionicons
+                  name="person"
+                  size={40}
+                  color="#2F80ED"
+                />
               )}
             </View>
+
             <Pressable
-              className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-white"
-              onPress={chooseProfileImage}
-              accessibilityLabel="Choose profile image"
+              style={styles.uploadButton}
+              onPress={chooseImage}
             >
-              <Feather name="upload" size={14} color="#17213b" />
+              <Feather
+                name="upload"
+                size={14}
+                color="#17213B"
+              />
             </Pressable>
           </View>
-          <Text className="pt-2 text-center text-[30px] font-semibold leading-tight text-white">
-            Please confirm and fill{"\n"}your identity below
+
+          <Text style={styles.title}>
+            Please confirm and fill{"\n"}
+            your identity below
+          </Text>
+
+          <Text style={styles.description}>
+            This information helps us personalize
+            your health experience.
           </Text>
         </View>
-        
-        <Text className="mb-4 text-[14px] leading-5 text-textSecondary">
-          This information helps us personalize your health experience.
-        </Text>
 
-        <SectionTitle label="Account" icon="person-outline" />
-        <Field label="Full name" icon="person-outline" value="Umwizerwa Ruth" />
-        <Field label="Username" icon="at-outline" value="@umwizerwaruth" />
-        <PickerField label="Gender" icon="male-female-outline" value={gender} options={genders} pickerKey="gender" openPicker={openPicker} setOpenPicker={setOpenPicker} onSelect={setGender} />
+        {/* ======================================================
+            ACCOUNT
+        ====================================================== */}
+
+        <SectionTitle
+          label="Account"
+          icon="person-outline"
+        />
+
+        <Field
+          label="Full name"
+          icon="person-outline"
+          value="Umwizerwa Ruth"
+        />
+
+        <Field
+          label="Username"
+          icon="at-outline"
+          value="@umwizerwaruth"
+        />
+
+        <PickerField
+          label="Gender"
+          icon="male-female-outline"
+          value={gender}
+          options={genders}
+          pickerKey="gender"
+          openPicker={openPicker}
+          setOpenPicker={setOpenPicker}
+          onSelect={setGender}
+        />
+
         <DateField
           value={dateOfBirth}
-          onPress={() => setShowDatePicker(true)}
+          onPress={() =>
+            setShowDatePicker(true)
+          }
         />
+
         {showDatePicker && (
           <DateTimePicker
             value={dateOfBirth}
@@ -285,64 +492,324 @@ export default function ProfileDetailsScreen({ navigation }: Props) {
             maximumDate={new Date()}
             onChange={(_, selectedDate) => {
               setShowDatePicker(false);
-              if (selectedDate) setDateOfBirth(selectedDate);
+
+              if (selectedDate) {
+                setDateOfBirth(
+                  selectedDate,
+                );
+              }
             }}
           />
         )}
 
-        <SectionTitle label="Personal info" icon="heart-outline" />
-        <Text className="mb-2 mt-3 text-[14px] font-semibold text-white">Address & contact</Text>
-        <CountryPickerField
-          country={country}
-          options={countries}
-          open={openPicker === "country"}
-          onToggle={() => setOpenPicker(openPicker === "country" ? null : "country")}
-          onSelect={(selectedCountry) => {
-            setCountry(selectedCountry);
-            const nextCities = citiesByCountry[selectedCountry.name] ?? [];
-            setCity(nextCities[0] ?? "");
-            setOpenPicker(null);
-          }}
+        {/* ======================================================
+            PERSONAL INFO
+        ====================================================== */}
+
+        <SectionTitle
+          label="Personal info"
+          icon="heart-outline"
         />
-        <PickerField
-          label="City"
-          icon="location-outline"
-          value={city}
-          options={citiesByCountry[country.name] ?? []}
-          pickerKey="city"
-          openPicker={openPicker}
-          setOpenPicker={setOpenPicker}
-          onSelect={setCity}
-        />
-        <View className="mb-3">
-          <Text className="mb-0.5 text-[14px] text-textSecondary">Phone number</Text>
-          <View className="flex-row items-center rounded-lg bg-card px-2">
-            <Text className="mr-2 text-[14px] font-semibold text-white">{country.code}</Text>
-            <TextInput value={phone} onChangeText={setPhone} placeholder="78 000 0000" placeholderTextColor="#9AA3B2" keyboardType="phone-pad" className="flex-1 py-1.5 text-[14px] text-textSecondary" />
+
+        <Text style={styles.subTitle}>
+          Address & contact
+        </Text>
+
+        {/* COUNTRY */}
+
+        <View style={styles.field}>
+          <Text style={styles.label}>
+            Country
+          </Text>
+
+          <Pressable
+            style={styles.input}
+            onPress={() =>
+              setOpenPicker(
+                openPicker === "country"
+                  ? null
+                  : "country",
+              )
+            }
+          >
+            <Text style={styles.countryFlag}>
+              {country.flag}
+            </Text>
+
+            <Text style={styles.pickerValue}>
+              {country.name}
+            </Text>
+
+            <Ionicons
+              name={
+                openPicker === "country"
+                  ? "chevron-up"
+                  : "chevron-down"
+              }
+              size={12}
+              color="#9AA3B2"
+            />
+          </Pressable>
+
+          {openPicker === "country" && (
+            <View
+              style={styles.pickerDropdown}
+            >
+              {countries.map((item) => (
+                <Pressable
+                  key={item.name}
+                  style={styles.pickerOption}
+                  onPress={() => {
+                    setCountry(item);
+                    setOpenPicker(null);
+                  }}
+                >
+                  <Text
+                    style={styles.countryFlag}
+                  >
+                    {item.flag}
+                  </Text>
+
+                  <Text
+                    style={
+                      styles.pickerOptionText
+                    }
+                  >
+                    {item.name} ({item.code})
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* CITY */}
+
+        <View style={styles.field}>
+          <Text style={styles.label}>
+            City
+          </Text>
+
+          <View style={styles.input}>
+            <Ionicons
+              name="location-outline"
+              size={12}
+              color="#9AA3B2"
+            />
+
+            <Text
+              style={styles.pickerValue}
+            >
+              {city || "Select from map"}
+            </Text>
+
+            <Ionicons
+              name="map-outline"
+              size={12}
+              color="#9AA3B2"
+            />
           </View>
         </View>
-        <PickerField label="Blood type" icon="water-outline" value={bloodType} options={bloodTypes} pickerKey="bloodType" openPicker={openPicker} setOpenPicker={setOpenPicker} onSelect={setBloodType} />
-        <Text className="mb-2 mt-3 text-[14px] font-semibold text-white">Allergies</Text>
-        <View className="mb-3 flex-row flex-wrap gap-1.5">
-          {(showAllergies ? allergyOptions : visibleAllergies).map((item) => {
-            const selected = allergies.includes(item);
+
+        {/* ======================================================
+            MAP
+        ====================================================== */}
+
+        <View style={styles.mapSection}>
+          <View style={styles.mapHeader}>
+            <View style={styles.mapHeaderText}>
+              <Text style={styles.subTitle}>
+                Location on map
+              </Text>
+
+              <Text
+                style={styles.mapDescription}
+              >
+                Tap anywhere on the map to
+                select your location.
+              </Text>
+            </View>
+
+            <Pressable
+              style={styles.mapButton}
+              onPress={() =>
+                setShowMap(
+                  (value) => !value,
+                )
+              }
+            >
+              <Ionicons
+                name={
+                  showMap
+                    ? "chevron-up"
+                    : "map-outline"
+                }
+                size={14}
+                color="#FFFFFF"
+              />
+
+              <Text
+                style={styles.mapButtonText}
+              >
+                {showMap
+                  ? "Hide"
+                  : "Open map"}
+              </Text>
+            </Pressable>
+          </View>
+
+          {showMap && (
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude:
+                    coordinates.latitude,
+                  longitude:
+                    coordinates.longitude,
+                  latitudeDelta: 0.08,
+                  longitudeDelta: 0.08,
+                }}
+                onPress={handleMapPress}
+              >
+                <Marker
+                  coordinate={{
+                    latitude:
+                      coordinates.latitude,
+                    longitude:
+                      coordinates.longitude,
+                  }}
+                  title={
+                    city ||
+                    "Selected location"
+                  }
+                  description={
+                    country.name
+                  }
+                />
+              </MapView>
+
+              <View
+                style={styles.mapInfo}
+              >
+                <Ionicons
+                  name="location"
+                  size={15}
+                  color="#2F80ED"
+                />
+
+                <Text
+                  style={styles.mapInfoText}
+                  numberOfLines={1}
+                >
+                  {city || "Unknown city"},{" "}
+                  {country.name}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* PHONE */}
+
+        <View style={styles.field}>
+          <Text style={styles.label}>
+            Phone number
+          </Text>
+
+          <View style={styles.input}>
+            <Text
+              style={styles.countryCode}
+            >
+              {country.code}
+            </Text>
+
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="78 000 0000"
+              placeholderTextColor="#9AA3B2"
+              keyboardType="phone-pad"
+              style={styles.textInput}
+            />
+          </View>
+        </View>
+
+        {/* BLOOD TYPE */}
+
+        <PickerField
+          label="Blood type"
+          icon="water-outline"
+          value={bloodType}
+          options={bloodTypes}
+          pickerKey="blood"
+          openPicker={openPicker}
+          setOpenPicker={setOpenPicker}
+          onSelect={setBloodType}
+        />
+
+        {/* ======================================================
+            ALLERGIES
+        ====================================================== */}
+
+        <Text style={styles.subTitle}>
+          Allergies
+        </Text>
+
+        <View style={styles.allergies}>
+          {(showAllergies
+            ? allergyOptions
+            : allergyOptions.slice(
+                0,
+                3,
+              )
+          ).map((item) => {
+            const selected =
+              selectedAllergies.includes(
+                item,
+              );
+
             return (
               <Pressable
                 key={item}
-                onPress={() => toggleAllergy(item)}
-                className={`rounded-md border px-2 py-1 ${selected ? "border-primary bg-primary/20" : "border-card bg-card"}`}
+                onPress={() =>
+                  toggleAllergy(item)
+                }
+                style={[
+                  styles.allergy,
+                  selected &&
+                    styles.allergySelected,
+                ]}
               >
-                <Text className="text-[14px] text-white">{item}</Text>
+                <Text
+                  style={styles.allergyText}
+                >
+                  {item}
+                </Text>
               </Pressable>
             );
           })}
+
           <Pressable
-            onPress={() => setShowAllergies((visible) => !visible)}
-            className="rounded-md border border-card bg-card px-2 py-1"
+            style={styles.allergy}
+            onPress={() =>
+              setShowAllergies(
+                (value) => !value,
+              )
+            }
           >
-            <Text className="text-[14px] text-primary">{showAllergies ? "Show less" : "12+ more"}</Text>
+            <Text style={styles.more}>
+              {showAllergies
+                ? "Show less"
+                : "12+ more"}
+            </Text>
           </Pressable>
         </View>
+
+        {/* ======================================================
+            HEIGHT
+        ====================================================== */}
+
         <RangeRow
           label="Height"
           value={height}
@@ -351,6 +818,11 @@ export default function ProfileDetailsScreen({ navigation }: Props) {
           max={220}
           onChange={setHeight}
         />
+
+        {/* ======================================================
+            WEIGHT
+        ====================================================== */}
+
         <RangeRow
           label="Weight"
           value={weight}
@@ -360,166 +832,213 @@ export default function ProfileDetailsScreen({ navigation }: Props) {
           onChange={setWeight}
         />
 
-        <Text className="mb-2 mt-3 text-[14px] font-semibold text-white">Additional notes</Text>
-        <View className="mb-3 rounded-lg bg-card px-2.5 py-1.5">
+        {/* ======================================================
+            NOTES
+        ====================================================== */}
+
+        <Text style={styles.subTitle}>
+          Additional notes
+        </Text>
+
+        <View style={styles.notes}>
           <TextInput
             value={notes}
             onChangeText={setNotes}
             multiline
+            maxLength={500}
             textAlignVertical="top"
-            className="min-h-[48px] text-[14px] leading-5 text-textSecondary"
+            style={styles.notesInput}
+            placeholder="Tell us anything important about your health..."
             placeholderTextColor="#9AA3B2"
           />
-          <Text className="text-right text-[14px] text-textSecondary">{notes.length}/500</Text>
+
+          <Text style={styles.counter}>
+            {notes.length}/500
+          </Text>
         </View>
 
-        <SectionTitle label="Insurance" icon="lock-closed-outline" />
-        <Text className="mb-1 mt-2 text-[14px] text-textSecondary">Insurance Provider</Text>
-        <View className="flex-row items-center rounded-lg bg-card px-2">
-          <Ionicons name="briefcase-outline" size={11} color="#9AA3B2" />
-          <TextInput
-            value={insuranceProvider}
-            onChangeText={(value) => {
-              setInsuranceProvider(value);
-              setIsProviderPickerOpen(true);
-            }}
-            onFocus={() => setIsProviderPickerOpen(true)}
-            placeholder="Select or type insurance"
-            placeholderTextColor="#9AA3B2"
-            className="flex-1 px-1.5 py-1.5 text-[14px] text-textSecondary"
-          />
-          <Pressable
-            hitSlop={8}
-            onPress={() => setIsProviderPickerOpen((open) => !open)}
+        {/* ======================================================
+            INSURANCE
+        ====================================================== */}
+
+        <SectionTitle
+          label="Insurance"
+          icon="lock-closed-outline"
+        />
+
+        {/* INSURANCE PROVIDER */}
+
+        <InsuranceProviderField
+          value={insuranceProvider}
+          onChange={setInsuranceProvider}
+        />
+
+        {/* POLICY NUMBER */}
+
+        <Field
+          label="Policy Number"
+          icon="key-outline"
+          placeholder="Enter policy number"
+        />
+
+        {/* INSURANCE CARD */}
+
+        <Text style={styles.subTitle}>
+          Insurance Card
+        </Text>
+
+        <View style={styles.uploadBox}>
+          <Text style={styles.uploadTitle}>
+            Browse your file to upload
+          </Text>
+
+          <Text
+            style={styles.uploadDescription}
           >
-            <Ionicons
-              name={isProviderPickerOpen ? "chevron-up" : "chevron-down"}
-              size={11}
-              color="#9AA3B2"
-            />
-          </Pressable>
-        </View>
-        {isProviderPickerOpen && (
-          <View className="mt-1 rounded-lg border border-progressTrack bg-card px-2">
-            {insuranceProviders
-              .filter((provider) =>
-                provider.toLowerCase().includes(insuranceProvider.toLowerCase()),
-              )
-              .map((provider) => (
-                <Pressable
-                  key={provider}
-                  onPress={() => {
-                    setInsuranceProvider(provider);
-                    setIsProviderPickerOpen(false);
-                  }}
-                  className="border-b border-progressTrack py-2 last:border-b-0"
-                >
-                  <Text className="text-[14px] text-white">{provider}</Text>
-                </Pressable>
-              ))}
-            <Text className="py-2 text-[14px] text-textSecondary">
-              Can&apos;t find yours? Type your own insurance company above.
+            Supported formats: jpg, png,
+            pdf (max 5MB)
+          </Text>
+
+          <Pressable
+            style={styles.browseButton}
+            onPress={
+              chooseInsuranceCard
+            }
+          >
+            <Text style={styles.browseText}>
+              Browse File
             </Text>
-          </View>
-        )}
-        <Field label="Policy Number" icon="key-outline" placeholder="Enter policy number" />
-        <Text className="mb-2 mt-3 text-[14px] font-semibold text-white">Insurance Card</Text>
-        <View className="mb-4 items-center rounded-lg bg-card px-3 py-2">
-          <Text className="text-center text-[14px] font-semibold text-primary">Browse your file to upload</Text>
-          <Text className="mt-0.5 text-center text-[14px] text-textSecondary">Supported formats: jpg, png, pdf (max 5MB)</Text>
-          <Pressable
-            className="mt-1.5 rounded-md bg-primary px-3 py-1"
-            onPress={chooseInsuranceCard}
-          >
-            <Text className="text-[14px] font-semibold text-white">Browse File</Text>
           </Pressable>
-          {insuranceCardName ? (
-            <Text className="mt-1 text-[14px] text-white" numberOfLines={1}>
-              Selected: {insuranceCardName}
+
+          {insuranceCard ? (
+            <Text
+              style={styles.selectedFile}
+              numberOfLines={1}
+            >
+              Selected: {insuranceCard}
             </Text>
           ) : null}
         </View>
 
-        <Pressable className="h-9 items-center justify-center rounded-lg bg-primary" onPress={() => navigation.navigate("ChooseAvatar")}>
-          <View className="flex-row items-center gap-1.5">
-            <Text className="text-[14px] font-semibold text-white">Continue</Text>
-            <Ionicons name="arrow-forward" size={12} color="#FFFFFF" />
-          </View>
+        {/* ======================================================
+            CONTINUE
+        ====================================================== */}
+
+        <Pressable
+          style={styles.continueButton}
+          onPress={() =>
+            navigation.navigate(
+              "ProfileSetup",)
+          }
+        >
+          <Text
+            style={styles.continueText}
+          >
+            Continue
+          </Text>
+
+          <Ionicons
+            name="arrow-forward"
+            size={13}
+            color="#FFFFFF"
+          />
         </Pressable>
-        <View className="mt-2 items-center">
-          <Ionicons name="lock-closed-outline" size={12} color="#9AA3B2" />
-          <Text className="mt-1 text-center text-[14px] text-textSecondary">Your personal information is encrypted and secure.</Text>
+
+        {/* SECURITY */}
+
+        <View style={styles.security}>
+          <Ionicons
+            name="lock-closed-outline"
+            size={12}
+            color="#9AA3B2"
+          />
+
+          <Text
+            style={styles.securityText}
+          >
+            Your personal information is
+            encrypted and secure.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function SectionTitle({ label, icon }: { label: string; icon: IconName }) {
-  return (
-    <View className="mb-2 mt-4 flex-row items-center gap-1 border-b border-progressTrack pb-1">
-      <Ionicons name={icon} size={10} color="#9AA3B2" />
-      <Text className="text-[14px] font-semibold text-white">{label}</Text>
-    </View>
-  );
-}
+/* ================================================================
+   SECTION TITLE
+================================================================ */
 
-function DateField({ value, onPress }: { value: Date; onPress: () => void }) {
-  return (
-    <View className="mb-3">
-      <Text className="mb-0.5 text-[14px] text-textSecondary">Date of birth</Text>
-      <Pressable className="flex-row items-center rounded-lg bg-card px-2 py-1.5" onPress={onPress}>
-        <Ionicons name="calendar-outline" size={11} color="#9AA3B2" />
-        <Text className="flex-1 px-1.5 text-[14px] text-white">
-          {value.toLocaleDateString()}
-        </Text>
-        <Ionicons name="calendar-outline" size={11} color="#9AA3B2" />
-      </Pressable>
-    </View>
-  );
-}
-
-function CountryPickerField({
-  country,
-  options,
-  open,
-  onToggle,
-  onSelect,
+function SectionTitle({
+  label,
+  icon,
 }: {
-  country: CountryOption;
-  options: CountryOption[];
-  open: boolean;
-  onToggle: () => void;
-  onSelect: (country: CountryOption) => void;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
 }) {
   return (
-    <View className="mb-3">
-      <Text className="mb-0.5 text-[14px] text-textSecondary">Country</Text>
-      <Pressable className="flex-row items-center rounded-lg bg-card px-2 py-1.5" onPress={onToggle}>
-        <Text className="mr-1.5 text-[16px]">{country.flag}</Text>
-        <Text className="flex-1 text-[14px] text-white">{country.name}</Text>
-        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={11} color="#9AA3B2" />
-      </Pressable>
-      {open && (
-        <ScrollView
-          className="mt-1 max-h-44 rounded-lg border border-progressTrack bg-card px-2"
-          nestedScrollEnabled
-        >
-          {options.map((option) => (
-            <Pressable
-              key={option.name}
-              className="flex-row items-center border-b border-progressTrack py-2 last:border-b-0"
-              onPress={() => onSelect(option)}
-            >
-              <Text className="mr-2 text-[16px]">{option.flag}</Text>
-              <Text className="text-[14px] text-white">{option.name} ({option.code})</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      )}
+    <View style={styles.sectionTitle}>
+      <Ionicons
+        name={icon}
+        size={11}
+        color="#9AA3B2"
+      />
+
+      <Text
+        style={styles.sectionTitleText}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
+
+/* ================================================================
+   DATE FIELD
+================================================================ */
+
+function DateField({
+  value,
+  onPress,
+}: {
+  value: Date;
+  onPress: () => void;
+}) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>
+        Date of birth
+      </Text>
+
+      <Pressable
+        style={styles.input}
+        onPress={onPress}
+      >
+        <Ionicons
+          name="calendar-outline"
+          size={12}
+          color="#9AA3B2"
+        />
+
+        <Text
+          style={styles.pickerValue}
+        >
+          {value.toLocaleDateString()}
+        </Text>
+
+        <Ionicons
+          name="calendar-outline"
+          size={12}
+          color="#9AA3B2"
+        />
+      </Pressable>
+    </View>
+  );
+}
+
+/* ================================================================
+   PICKER
+================================================================ */
 
 function PickerField({
   label,
@@ -532,74 +1051,249 @@ function PickerField({
   onSelect,
 }: {
   label: string;
-  icon: IconName;
+  icon: keyof typeof Ionicons.glyphMap;
   value: string;
   options: string[];
   pickerKey: string;
   openPicker: string | null;
-  setOpenPicker: (key: string | null) => void;
+  setOpenPicker: (
+    key: string | null,
+  ) => void;
   onSelect: (value: string) => void;
 }) {
-  const isOpen = openPicker === pickerKey;
+  const isOpen =
+    openPicker === pickerKey;
 
   return (
-    <View className="mb-3">
-      <Text className="mb-0.5 text-[14px] text-textSecondary">{label}</Text>
+    <View style={styles.field}>
+      <Text style={styles.label}>
+        {label}
+      </Text>
+
       <Pressable
-        className="flex-row items-center rounded-lg bg-card px-2 py-1.5"
-        onPress={() => setOpenPicker(isOpen ? null : pickerKey)}
+        style={styles.input}
+        onPress={() =>
+          setOpenPicker(
+            isOpen
+              ? null
+              : pickerKey,
+          )
+        }
       >
-        <Ionicons name={icon} size={11} color="#9AA3B2" />
-        <Text className="flex-1 px-1.5 text-[14px] text-white">{value || `Select ${label.toLowerCase()}`}</Text>
-        <Ionicons name={isOpen ? "chevron-up" : "chevron-down"} size={11} color="#9AA3B2" />
+        <Ionicons
+          name={icon}
+          size={12}
+          color="#9AA3B2"
+        />
+
+        <Text
+          style={styles.pickerValue}
+        >
+          {value ||
+            `Select ${label.toLowerCase()}`}
+        </Text>
+
+        <Ionicons
+          name={
+            isOpen
+              ? "chevron-up"
+              : "chevron-down"
+          }
+          size={12}
+          color="#9AA3B2"
+        />
       </Pressable>
+
       {isOpen && (
-        <ScrollView
-          className="mt-1 max-h-44 rounded-lg border border-progressTrack bg-card px-2"
-          nestedScrollEnabled
+        <View
+          style={styles.pickerDropdown}
         >
           {options.map((option) => (
             <Pressable
               key={option}
-              className="border-b border-progressTrack py-2 last:border-b-0"
+              style={
+                styles.pickerOption
+              }
               onPress={() => {
                 onSelect(option);
                 setOpenPicker(null);
               }}
             >
-              <Text className="text-[14px] text-white">{option}</Text>
+              <Text
+                style={
+                  styles.pickerOptionText
+                }
+              >
+                {option}
+              </Text>
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
       )}
     </View>
   );
 }
+
+/* ================================================================
+   INSURANCE PROVIDER
+================================================================ */
+
+function InsuranceProviderField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] =
+    useState(false);
+
+  const filteredProviders =
+    insuranceProviders.filter(
+      (provider) =>
+        provider
+          .toLowerCase()
+          .includes(
+            value.toLowerCase(),
+          ),
+    );
+
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>
+        Insurance Provider
+      </Text>
+
+      <View style={styles.input}>
+        <Ionicons
+          name="briefcase-outline"
+          size={12}
+          color="#9AA3B2"
+        />
+
+        <TextInput
+          value={value}
+          onChangeText={(text) => {
+            onChange(text);
+            setOpen(true);
+          }}
+          onFocus={() =>
+            setOpen(true)
+          }
+          placeholder="Select or type insurance"
+          placeholderTextColor="#9AA3B2"
+          style={styles.textInput}
+        />
+
+        <Pressable
+          hitSlop={8}
+          onPress={() =>
+            setOpen(
+              (current) => !current,
+            )
+          }
+        >
+          <Ionicons
+            name={
+              open
+                ? "chevron-up"
+                : "chevron-down"
+            }
+            size={12}
+            color="#9AA3B2"
+          />
+        </Pressable>
+      </View>
+
+      {open && (
+        <View
+          style={styles.pickerDropdown}
+        >
+          {filteredProviders.map(
+            (provider) => (
+              <Pressable
+                key={provider}
+                style={
+                  styles.pickerOption
+                }
+                onPress={() => {
+                  onChange(provider);
+                  setOpen(false);
+                }}
+              >
+                <Text
+                  style={
+                    styles.pickerOptionText
+                  }
+                >
+                  {provider}
+                </Text>
+              </Pressable>
+            ),
+          )}
+
+          <Text
+            style={
+              styles.insuranceHint
+            }
+          >
+            Can't find yours? Type your
+            own insurance company above.
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+/* ================================================================
+   GENERIC FIELD
+================================================================ */
 
 function Field({
   label,
   icon,
   value,
   placeholder,
-  trailingIcon = "create-outline",
 }: {
   label: string;
-  icon: IconName;
+  icon: keyof typeof Ionicons.glyphMap;
   value?: string;
   placeholder?: string;
-  trailingIcon?: IconName;
 }) {
   return (
-    <View className="mb-3">
-      <Text className="mb-0.5 text-[14px] text-textSecondary">{label}</Text>
-      <View className="flex-row items-center rounded-lg bg-card px-2">
-        <Ionicons name={icon} size={11} color="#9AA3B2" />
-        <TextInput value={value} placeholder={placeholder} placeholderTextColor="#9AA3B2" className="flex-1 px-1.5 py-1.5 text-[14px] text-textSecondary" />
-        <Ionicons name={trailingIcon} size={11} color="#9AA3B2" />
+    <View style={styles.field}>
+      <Text style={styles.label}>
+        {label}
+      </Text>
+
+      <View style={styles.input}>
+        <Ionicons
+          name={icon}
+          size={12}
+          color="#9AA3B2"
+        />
+
+        <TextInput
+          value={value}
+          placeholder={placeholder}
+          placeholderTextColor="#9AA3B2"
+          style={styles.textInput}
+        />
+
+        <Ionicons
+          name="create-outline"
+          size={12}
+          color="#9AA3B2"
+        />
       </View>
     </View>
   );
 }
+
+/* ================================================================
+   RANGE
+================================================================ */
 
 function RangeRow({
   label,
@@ -616,42 +1310,517 @@ function RangeRow({
   max: number;
   onChange: (value: number) => void;
 }) {
-  const trackWidth = useRef(0);
-  const updateValue = (locationX: number) => {
-    if (!trackWidth.current) return;
-    const percentage = Math.max(0, Math.min(1, locationX / trackWidth.current));
-    onChange(Math.round(min + percentage * (max - min)));
-  };
-  const responder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (event) => updateValue(event.nativeEvent.locationX),
-      onPanResponderMove: (event) => updateValue(event.nativeEvent.locationX),
-    }),
-  ).current;
-  const progress = (value - min) / (max - min);
+  const progress =
+    (value - min) / (max - min);
+
+  const safeProgress = Math.max(
+    0,
+    Math.min(1, progress),
+  );
 
   return (
-    <View className="mb-3">
-      <View className="flex-row items-center justify-between">
-        <Text className="text-[14px] font-semibold text-white">{label}</Text>
-        <Text className="text-[14px] text-textSecondary">{value} {unit}</Text>
-      </View>
+    <View style={styles.rangeRow}>
       <View
-        className="mt-2 h-2 rounded-full bg-progressTrack"
-        onLayout={(event) => {
-          trackWidth.current = event.nativeEvent.layout.width;
-        }}
-        {...responder.panHandlers}
+        style={styles.rangeHeader}
+      >
+        <Text
+          style={styles.rangeLabel}
+        >
+          {label}
+        </Text>
+
+        <Text
+          style={styles.rangeValue}
+        >
+          {value} {unit}
+        </Text>
+      </View>
+
+      <View
+        style={styles.rangeTrack}
       >
         <View
-          className="h-2 rounded-full bg-primary"
-          style={{ width: `${progress * 100}%` }}
-        >
-          <View className="absolute -right-1.5 -top-1 h-4 w-4 rounded-full border-2 border-primary bg-background" />
-        </View>
+          style={[
+            styles.rangeProgress,
+            {
+              width: `${safeProgress * 100}%`,
+            },
+          ]}
+        />
+
+        <Pressable
+          style={[
+            styles.rangeThumb,
+            {
+              left: `${safeProgress * 100}%`,
+            },
+          ]}
+          onPress={() => {
+            const next =
+              value >= max
+                ? min
+                : value + 1;
+
+            onChange(next);
+          }}
+        />
       </View>
     </View>
   );
 }
+
+/* ================================================================
+   STYLES
+================================================================ */
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#101828",
+    paddingHorizontal: 28,
+  },
+
+  content: {
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
+
+  /* HEADER */
+
+  header: {
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 24,
+  },
+
+  avatarWrapper: {
+    width: 112,
+    height: 112,
+    marginBottom: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 56,
+    padding: 4,
+    backgroundColor:
+      "rgba(47,111,237,0.2)",
+  },
+
+  avatar: {
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    borderWidth: 2,
+    borderColor: "#000000",
+    backgroundColor: "#87CEEB",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+
+  uploadButton: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#101828",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  title: {
+    color: "#FFFFFF",
+    fontSize: 30,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 35,
+  },
+
+  description: {
+    marginTop: 12,
+    color: "#9AA3B2",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+  },
+
+  /* SECTION */
+
+  sectionTitle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: "#344054",
+  },
+
+  sectionTitleText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  subTitle: {
+    marginTop: 12,
+    marginBottom: 8,
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  /* FIELDS */
+
+  field: {
+    marginBottom: 12,
+  },
+
+  label: {
+    marginBottom: 3,
+    color: "#9AA3B2",
+    fontSize: 14,
+  },
+
+  input: {
+    minHeight: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    backgroundColor: "#1D2939",
+    paddingHorizontal: 9,
+  },
+
+  textInput: {
+    flex: 1,
+    minHeight: 36,
+    paddingHorizontal: 7,
+    paddingVertical: 5,
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+  pickerValue: {
+    flex: 1,
+    paddingHorizontal: 7,
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+  countryCode: {
+    marginRight: 8,
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  countryFlag: {
+    marginRight: 8,
+    fontSize: 16,
+  },
+
+  /* PICKER */
+
+  pickerDropdown: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#344054",
+    borderRadius: 8,
+    backgroundColor: "#1D2939",
+    paddingHorizontal: 8,
+    overflow: "hidden",
+  },
+
+  pickerOption: {
+    minHeight: 38,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#344054",
+  },
+
+  pickerOptionText: {
+    flex: 1,
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+  insuranceHint: {
+    paddingVertical: 10,
+    color: "#9AA3B2",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  /* MAP */
+
+  mapSection: {
+    marginBottom: 12,
+  },
+
+  mapHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  mapHeaderText: {
+    flex: 1,
+    paddingRight: 10,
+  },
+
+  mapDescription: {
+    marginTop: -3,
+    color: "#9AA3B2",
+    fontSize: 12,
+    lineHeight: 17,
+  },
+
+  mapButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 7,
+    backgroundColor: "#2F80ED",
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+
+  mapButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+
+  mapContainer: {
+    height: 280,
+    marginTop: 8,
+    borderRadius: 10,
+    overflow: "hidden",
+    position: "relative",
+  },
+
+  map: {
+    width: "100%",
+    height: "100%",
+  },
+
+  mapInfo: {
+    position: "absolute",
+    left: 10,
+    right: 10,
+    bottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 8,
+    backgroundColor:
+      "rgba(16,24,40,0.92)",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+
+  mapInfoText: {
+    flex: 1,
+    marginLeft: 6,
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  /* ALLERGIES */
+
+  allergies: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 12,
+  },
+
+  allergy: {
+    borderWidth: 1,
+    borderColor: "#344054",
+    borderRadius: 6,
+    backgroundColor: "#1D2939",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+
+  allergySelected: {
+    borderColor: "#2F80ED",
+    backgroundColor:
+      "rgba(47,128,237,0.2)",
+  },
+
+  allergyText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+  more: {
+    color: "#2F80ED",
+    fontSize: 14,
+  },
+
+  /* RANGE */
+
+  rangeRow: {
+    marginBottom: 14,
+  },
+
+  rangeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  rangeLabel: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  rangeValue: {
+    color: "#9AA3B2",
+    fontSize: 14,
+  },
+
+  rangeTrack: {
+    height: 8,
+    marginTop: 9,
+    borderRadius: 4,
+    backgroundColor: "#344054",
+    position: "relative",
+  },
+
+  rangeProgress: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#2F80ED",
+  },
+
+  rangeThumb: {
+    position: "absolute",
+    top: -4,
+    width: 16,
+    height: 16,
+    marginLeft: -8,
+    borderWidth: 2,
+    borderRadius: 8,
+    borderColor: "#2F80ED",
+    backgroundColor: "#101828",
+  },
+
+  /* NOTES */
+
+  notes: {
+    minHeight: 95,
+    marginBottom: 12,
+    borderRadius: 8,
+    backgroundColor: "#1D2939",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+
+  notesInput: {
+    minHeight: 65,
+    color: "#FFFFFF",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+
+  counter: {
+    color: "#9AA3B2",
+    fontSize: 12,
+    textAlign: "right",
+  },
+
+  /* UPLOAD */
+
+  uploadBox: {
+    alignItems: "center",
+    marginBottom: 16,
+    borderRadius: 8,
+    backgroundColor: "#1D2939",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+
+  uploadTitle: {
+    color: "#2F80ED",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  uploadDescription: {
+    marginTop: 3,
+    color: "#9AA3B2",
+    fontSize: 12,
+    textAlign: "center",
+  },
+
+  browseButton: {
+    marginTop: 9,
+    borderRadius: 6,
+    backgroundColor: "#2F80ED",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+
+  browseText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  selectedFile: {
+    maxWidth: "90%",
+    marginTop: 6,
+    color: "#FFFFFF",
+    fontSize: 12,
+  },
+
+  /* CONTINUE */
+
+  continueButton: {
+    height: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 8,
+    backgroundColor: "#2F80ED",
+  },
+
+  continueText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  /* SECURITY */
+
+  security: {
+    alignItems: "center",
+    marginTop: 9,
+  },
+
+  securityText: {
+    marginTop: 4,
+    color: "#9AA3B2",
+    fontSize: 12,
+    lineHeight: 17,
+    textAlign: "center",
+  },
+});

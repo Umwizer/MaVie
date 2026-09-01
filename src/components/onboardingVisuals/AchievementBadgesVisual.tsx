@@ -1,5 +1,6 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants/theme";
 
 const BADGES = [
   { name: "Hydration Pal", icon: "water" as const, color: "#8B5CF6" },
@@ -9,20 +10,22 @@ const BADGES = [
 
 export default function AchievementBadgesVisual() {
   return (
-    <View className="flex-1 w-full items-center justify-center">
-      <View className="flex-row gap-3">
+    <View style={styles.container}>
+      <View style={styles.row}>
         {BADGES.map((b, i) => (
           <View
             key={b.name}
-            className="bg-card rounded-2xl px-4 py-5 items-center gap-3 w-28"
-            style={{ marginTop: i === 1 ? -16 : 16 }}
+            style={[
+              styles.badgeCard,
+              { marginTop: i === 1 ? -16 : 16 } // staggered effect
+            ]}
           >
-            <View className="w-14 h-14 rounded-2xl items-center justify-center" style={{ backgroundColor: `${b.color}33` }}>
+            <View style={[styles.iconCircle, { backgroundColor: `${b.color}33` }]}>
               <Ionicons name={b.icon} size={26} color={b.color} />
             </View>
-            <View className="items-center">
-              <Text className="text-textPrimary text-xs font-semibold text-center">{b.name}</Text>
-              <Text className="text-textSecondary text-[10px]">Unlocked</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.badgeName}>{b.name}</Text>
+              <Text style={styles.badgeStatus}>Unlocked</Text>
             </View>
           </View>
         ))}
@@ -30,3 +33,47 @@ export default function AchievementBadgesVisual() {
     </View>
   );
 }
+
+const CARD_WIDTH = 112; // w-28
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  row: {
+    flexDirection: "row",
+    gap: 12, // if gap errors, add marginHorizontal: 6 to badgeCard
+  },
+  badgeCard: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    alignItems: "center",
+    gap: 12,
+    width: CARD_WIDTH,
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textContainer: {
+    alignItems: "center",
+  },
+  badgeName: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  badgeStatus: {
+    color: colors.textSecondary,
+    fontSize: 10,
+  },
+});

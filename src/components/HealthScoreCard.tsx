@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { DailyScoreEntry } from "../types/health";
 import { buildWeeklyView, buildMonthlyView } from "../utils/scoreAggregation";
+import { colors } from "../constants/theme"; // adjust path if needed
 
 type Period = "Weekly" | "Monthly";
 
@@ -30,32 +31,26 @@ export default function HealthScoreCard({ entries }: Props) {
       : `${view.trendPct > 0 ? "+" : ""}${view.trendPct}% vs last ${period === "Weekly" ? "week" : "month"}`;
 
   return (
-    <View className="w-full bg-card rounded-3xl p-6">
-      <View className="flex-row justify-between items-center mb-1">
-        <View className="flex-row items-center gap-2">
-          <Ionicons name="sparkles" size={22} color="#2F6FED" />
-          <Text className="text-textPrimary text-3xl font-bold">{view.score.toFixed(1)}</Text>
+    <View style={styles.card}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.scoreRow}>
+          <Ionicons name="sparkles" size={22} color={colors.primary} />
+          <Text style={styles.scoreText}>{view.score.toFixed(1)}</Text>
         </View>
 
-        <View className="relative">
-          <Pressable
-            className="flex-row items-center gap-1.5 border border-navInactive rounded-full px-3.5 py-2"
-            onPress={() => setMenuOpen((v) => !v)}
-          >
-            <Ionicons name="calendar-outline" size={14} color="#9AA3B2" />
-            <Text className="text-textSecondary text-xs">{period}</Text>
-            <Ionicons name="chevron-down" size={14} color="#9AA3B2" />
+        <View style={styles.relative}>
+          <Pressable style={styles.periodButton} onPress={() => setMenuOpen((v) => !v)}>
+            <Ionicons name="calendar-outline" size={14} color={colors.textSecondary} />
+            <Text style={styles.periodText}>{period}</Text>
+            <Ionicons name="chevron-down" size={14} color={colors.textSecondary} />
           </Pressable>
 
           {menuOpen && (
-            <View className="absolute top-11 right-0 bg-card border border-navInactive rounded-xl overflow-hidden z-10 w-28">
+            <View style={styles.dropdown}>
               {(["Weekly", "Monthly"] as Period[]).map((p) => (
-                <Pressable key={p} className="px-4 py-2.5" onPress={() => selectPeriod(p)}>
-                  <Text
-                    className={
-                      p === period ? "text-primary text-xs font-semibold" : "text-textSecondary text-xs"
-                    }
-                  >
+                <Pressable key={p} style={styles.dropdownItem} onPress={() => selectPeriod(p)}>
+                  <Text style={p === period ? styles.activePeriodText : styles.periodText}>
                     {p}
                   </Text>
                 </Pressable>
@@ -65,34 +60,143 @@ export default function HealthScoreCard({ entries }: Props) {
         </View>
       </View>
 
-      <Text className="text-textSecondary text-sm mb-6">Your Asklepios Score</Text>
+      <Text style={styles.subtitle}>Your Asklepios Score</Text>
 
-      <View className="flex-row justify-between items-end h-28 mb-5">
+      {/* Chart */}
+      <View style={styles.chart}>
         {view.points.map((point, i) => (
-          <View key={i} className="items-center flex-1 gap-2">
+          <View key={i} style={styles.chartColumn}>
             <View
-              className={point.highlight ? "w-2.5 rounded-full bg-primaryLight" : "w-2.5 rounded-full bg-primary"}
-              style={{ height: Math.max(96 * point.value, 4) }}
+              style={[
+                styles.bar,
+                { 
+                  height: Math.max(96 * point.value, 4),
+                  backgroundColor: point.highlight ? colors.primaryLight : colors.primary
+                }
+              ]}
             />
-            <Text className="text-navInactive text-[11px]">{point.label}</Text>
+            <Text style={styles.chartLabel}>{point.label}</Text>
           </View>
         ))}
       </View>
 
-      <View className="flex-row items-center gap-5">
-        <View className="flex-row items-center gap-1.5">
+      {/* Footer stats */}
+      <View style={styles.statsRow}>
+        <View style={styles.statItem}>
           <Ionicons
             name={view.trendPct >= 0 ? "trending-up" : "trending-down"}
             size={16}
             color={view.trendPct >= 0 ? "#22C55E" : "#F43F5E"}
           />
-          <Text className="text-textPrimary text-sm">{trendLabel}</Text>
+          <Text style={styles.statText}>{trendLabel}</Text>
         </View>
-        <View className="flex-row items-center gap-1.5">
+        <View style={styles.statItem}>
           <Ionicons name="bulb" size={16} color="#FBBF24" />
-          <Text className="text-textPrimary text-sm">{view.insightsCount} insights</Text>
+          <Text style={styles.statText}>{view.insightsCount} insights</Text>
         </View>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    width: "100%",
+    backgroundColor: colors.cardBackground,
+    borderRadius: 24,
+    padding: 24,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  scoreRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8, // if gap errors, use marginRight on Ionicons
+  },
+  scoreText: {
+    color: colors.textPrimary,
+    fontSize: 30,
+    fontWeight: "700",
+  },
+  relative: {
+    position: "relative",
+  },
+  periodButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.navInactive,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  periodText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
+  dropdown: {
+    position: "absolute",
+    top: 44,
+    right: 0,
+    backgroundColor: colors.cardBackground,
+    borderWidth: 1,
+    borderColor: colors.navInactive,
+    borderRadius: 12,
+    overflow: "hidden",
+    zIndex: 10,
+    width: 112,
+  },
+  dropdownItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  activePeriodText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  subtitle: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginBottom: 24,
+  },
+  chart: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 112,
+    marginBottom: 20,
+  },
+  chartColumn: {
+    alignItems: "center",
+    flex: 1,
+    gap: 8,
+  },
+  bar: {
+    width: 10,
+    borderRadius: 8,
+  },
+  chartLabel: {
+    color: colors.navInactive,
+    fontSize: 11,
+  },
+  statsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+  },
+  statItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  statText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+  },
+});

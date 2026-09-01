@@ -1,28 +1,91 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants/theme"; // adjust path
 
 export default function ChatCompanionVisual() {
   return (
-    <View className="flex-1 w-full justify-center gap-3">
-      <View className="self-end bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%]">
-        <Text className="text-white text-sm">Hi, how much water do I need to drink for today?</Text>
-        <Text className="text-white/70 text-[10px] text-right mt-1">11:25</Text>
+    <View style={styles.container}>
+      {/* User Message */}
+      <View style={[styles.bubble, styles.userBubble]}>
+        <Text style={styles.userText}>Hi, how much water do I need to drink for today?</Text>
+        <Text style={styles.userTime}>11:25</Text>
       </View>
 
-      <View className="flex-row items-end gap-2 max-w-[90%]">
-        <View className="w-8 h-8 rounded-full bg-card items-center justify-center">
-          <Ionicons name="hardware-chip" size={16} color="#2F6FED" />
+      {/* AI Message */}
+      <View style={styles.aiRow}>
+        <View style={styles.avatar}>
+          <Ionicons name="hardware-chip" size={16} color={colors.primary} />
         </View>
-        <View className="bg-card rounded-2xl rounded-tl-sm px-4 py-3 flex-1">
-          <Text className="text-textPrimary text-sm">You're currently at 4 glasses — you need 4 more for today! Let's drink!</Text>
-          <Text className="text-textSecondary text-[10px] text-right mt-1">11:25</Text>
+        <View style={[styles.bubble, styles.aiBubble]}>
+          <Text style={styles.aiText}>You're currently at 4 glasses — you need 4 more for today! Let's drink!</Text>
+          <Text style={styles.aiTime}>11:25</Text>
         </View>
       </View>
 
-      <View className="self-end bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%]">
-        <Text className="text-white text-sm">Wow, amazing! Thank you!</Text>
-        <Text className="text-white/70 text-[10px] text-right mt-1">11:25</Text>
+      {/* User Message */}
+      <View style={[styles.bubble, styles.userBubble]}>
+        <Text style={styles.userText}>Wow, amazing! Thank you!</Text>
+        <Text style={styles.userTime}>11:25</Text>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    gap: 12, // if gap errors, add marginBottom: 12 to aiRow and userBubble
+  },
+  bubble: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    maxWidth: "85%",
+  },
+  userBubble: {
+    alignSelf: "flex-end",
+    backgroundColor: colors.primary,
+    borderTopRightRadius: 4, // rounded-tr-sm
+  },
+  userText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+  userTime: {
+    color: "rgba(255,255,255,0.7)", // text-white/70
+    fontSize: 10,
+    textAlign: "right",
+    marginTop: 4,
+  },
+  aiRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+    maxWidth: "90%",
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.cardBackground,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  aiBubble: {
+    backgroundColor: colors.cardBackground,
+    borderTopLeftRadius: 4, // rounded-tl-sm
+    flex: 1,
+  },
+  aiText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+  },
+  aiTime: {
+    color: colors.textSecondary,
+    fontSize: 10,
+    textAlign: "right",
+    marginTop: 4,
+  },
+});

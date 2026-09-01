@@ -1,16 +1,16 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet, useColorScheme } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useColorScheme } from 'nativewind';
+import { colors } from '../constants/theme'; // adjust path
 
 interface GlowIconProps {
   size?: number;
 }
 
 export default function GlowIcon({ size = 32 }: GlowIconProps) {
-  const { colorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
-  const iconColor = '#3D6FF2'; // same blue in both modes
+  const scheme = useColorScheme(); // RN built-in instead of nativewind
+  const isDark = scheme === 'dark';
+  const iconColor = colors.primary; // '#3D6FF2'
 
   const layers = isDark
     ? [
@@ -29,19 +29,33 @@ export default function GlowIcon({ size = 32 }: GlowIconProps) {
       ];
 
   return (
-    <View className="items-center justify-center" style={{ width: size * 5, height: size * 5 }}>
+    <View style={[styles.container, { width: size * 5, height: size * 5 }]}>
       {layers.map((layer, i) => (
         <View
           key={i}
-          className="absolute rounded-full bg-blue-500"
-          style={{
-            width: size * layer.scale,
-            height: size * layer.scale,
-            opacity: layer.opacity,
-          }}
+          style={[
+            styles.glowLayer,
+            {
+              width: size * layer.scale,
+              height: size * layer.scale,
+              opacity: layer.opacity,
+              backgroundColor: iconColor,
+            },
+          ]}
         />
       ))}
       <Feather name="plus" size={size} color={iconColor} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  glowLayer: {
+    position: 'absolute',
+    borderRadius: 9999, // rounded-full
+  },
+});

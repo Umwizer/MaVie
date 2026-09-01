@@ -8,16 +8,37 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from "../services/firebase";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../navigation/types";
 
 const HERO_IMAGE = require("../../assets/welcome-hero.jpg");
 
-type WelcomeScreenProps = {
-  onGetStarted: () => void;
-};
+type SplashScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Splash"
+>;
 
-function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
+export default function SplashScreen() {
+  const navigation = useNavigation<SplashScreenNavigationProp>();
   const insets = useSafeAreaInsets();
+  const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleGetStarted = () => {
+    // If user is already authenticated, go to OnboardingReady
+    // Otherwise, go to Welcome for login/signup
+  
+      navigation.navigate("OnboardingScreen");};
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -54,7 +75,7 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
           </Text>
 
           <Pressable
-            onPress={onGetStarted}
+            onPress={handleGetStarted}
             style={({ pressed }) => [
               styles.button,
               pressed && styles.buttonPressed,
@@ -68,12 +89,6 @@ function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
       </ImageBackground>
     </View>
   );
-}
-
-export default function SplashScreenView({
-  onGetStarted,
-}: WelcomeScreenProps) {
-  return <WelcomeScreen onGetStarted={onGetStarted} />;
 }
 
 const styles = StyleSheet.create({

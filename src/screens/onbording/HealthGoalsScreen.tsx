@@ -1,154 +1,252 @@
 // src/screens/onbording/HealthGoalsScreen.tsx
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   SafeAreaView,
-  Platform,
-  useColorScheme,
   ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
-import type { RootStackParamList } from '../../navigation/types';
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-type HealthGoalsScreenNavigationProp = NativeStackNavigationProp<
+import type { RootStackParamList } from "../../navigation/types";
+
+type NavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  'HealthGoals'
+  "HealthGoals"
 >;
 
 const HealthGoalsScreen = () => {
-  const navigation = useNavigation<HealthGoalsScreenNavigationProp>();
-  const colorScheme = useColorScheme();
-  const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
+  const navigation = useNavigation<NavigationProp>();
+  const systemColorScheme = useColorScheme();
+
+  const [isDarkMode, setIsDarkMode] = useState(
+    systemColorScheme === "dark"
+  );
+
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
-
-  const statusBarStyle: 'light' | 'dark' = isDarkMode ? 'light' : 'dark';
-
-  const colors = {
-    background: isDarkMode ? '#121212' : '#FFFFFF',
-    textPrimary: isDarkMode ? '#FFFFFF' : '#1A1A1A',
-    textSecondary: isDarkMode ? '#B0B0B0' : '#666666',
-    textLight: isDarkMode ? '#666666' : '#B0B0B0',
-    skipText: '#4A6FFF',
-    lineColor: isDarkMode ? '#333333' : '#E0E0E0',
-    cardBg: isDarkMode ? '#1E1E1E' : '#F5F6FA',
-    cardBorder: isDarkMode ? '#333333' : '#E0E0E0',
-    cardSelected: '#4A6FFF',
-    cardSelectedBg: isDarkMode ? '#1A2A4A' : '#E8EDFF',
-    buttonBg: '#4A6FFF',
-    buttonDisabled: isDarkMode ? '#333333' : '#F0F0F0',
-    buttonTextDisabled: isDarkMode ? '#666666' : '#B0B0B0',
-    checkmark: '#4A6FFF',
-  };
+  const colors = isDarkMode
+    ? {
+        background: "#121212",
+        textPrimary: "#FFFFFF",
+        textSecondary: "#B0B0B0",
+        line: "#333333",
+        card: "#1E1E1E",
+        cardBorder: "#333333",
+        selectedCard: "#1A2A4A",
+        primary: "#4A6FFF",
+        disabled: "#333333",
+        disabledText: "#666666",
+      }
+    : {
+        background: "#FFFFFF",
+        textPrimary: "#1A1A1A",
+        textSecondary: "#666666",
+        line: "#E0E0E0",
+        card: "#F5F6FA",
+        cardBorder: "#E0E0E0",
+        selectedCard: "#E8EDFF",
+        primary: "#4A6FFF",
+        disabled: "#F0F0F0",
+        disabledText: "#B0B0B0",
+      };
 
   const healthGoals = [
-    { id: '1', label: 'Improve my overall health', icon: '💪' },
-    { id: '2', label: 'Track my health metrics', icon: '📊' },
-    { id: '3', label: 'Manage my meds', icon: '💊' },
-    { id: '4', label: 'I wanna try wellness AI assistant', icon: '🤖' },
-    { id: '5', label: 'I want to analyze activity', icon: '📈' },
-    { id: '6', label: 'Just wanna try the app', icon: '👋' },
+    {
+      id: "1",
+      label: "Improve my overall health",
+      icon: "💪",
+    },
+    {
+      id: "2",
+      label: "Track my health metrics",
+      icon: "📊",
+    },
+    {
+      id: "3",
+      label: "Manage my meds",
+      icon: "💊",
+    },
+    {
+      id: "4",
+      label: "I wanna try wellness AI assistant",
+      icon: "🤖",
+    },
+    {
+      id: "5",
+      label: "I want to analyze activity",
+      icon: "📈",
+    },
+    {
+      id: "6",
+      label: "Just wanna try the app",
+      icon: "👋",
+    },
   ];
 
+  const handleSelectGoal = (goalId: string) => {
+    setSelectedGoal((current) =>
+      current === goalId ? null : goalId
+    );
+  };
+
   const handleContinue = () => {
-    if (selectedGoal) {
-      console.log('Selected goal:', selectedGoal);
-      // Navigate to BirthDate screen with the selected goal
-      navigation.navigate('BirthDate', { selectedGoal: selectedGoal });
-    }
+    if (!selectedGoal) return;
+
+    navigation.navigate("BirthDate", {
+      selectedGoal,
+    });
   };
 
   const handleSkip = () => {
-    // Navigate to BirthDate screen without a goal
-    navigation.navigate('BirthDate');
-  };
-
-  const handleSelectGoal = (goalId: string) => {
-    if (selectedGoal === goalId) {
-      setSelectedGoal(null);
-    } else {
-      setSelectedGoal(goalId);
-    }
+    navigation.navigate("BirthDate");
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={statusBarStyle} />
+    <SafeAreaView
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.background,
+        },
+      ]}
+    >
+      <StatusBar
+        style={isDarkMode ? "light" : "dark"}
+      />
 
-      {/* Back Icon and Skip Button with Horizontal Line */}
-      <View style={styles.headerButtons}>
-        <TouchableOpacity 
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
         >
-          <Text style={[styles.backButtonText, { color: colors.textPrimary }]}>←</Text>
+          <Text
+            style={[
+              styles.backText,
+              { color: colors.textPrimary },
+            ]}
+          >
+            ←
+          </Text>
         </TouchableOpacity>
-        
-        <View style={[styles.horizontalLine, { backgroundColor: colors.lineColor }]} />
-        
-        <TouchableOpacity 
+
+        <View
+          style={[
+            styles.headerLine,
+            { backgroundColor: colors.line },
+          ]}
+        />
+
+        <TouchableOpacity
           style={styles.skipButton}
           onPress={handleSkip}
+          activeOpacity={0.7}
         >
-          <Text style={[styles.skipButtonText, { color: colors.skipText }]}>Skip</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Dark Mode Toggle */}
-      <View style={styles.themeToggleContainer}>
-        <TouchableOpacity style={styles.themeToggle} onPress={toggleDarkMode}>
-          <Text style={styles.themeToggleText}>
-            {isDarkMode ? '☀️' : '🌙'}
+          <Text
+            style={[
+              styles.skipText,
+              { color: colors.primary },
+            ]}
+          >
+            Skip
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Replaced KeyboardAvoidingView with a plain View */}
-      <View style={styles.flexContainer}>
-        <ScrollView 
-          style={styles.scrollView}
+      {/* Theme toggle */}
+      <View style={styles.themeContainer}>
+        <TouchableOpacity
+          style={styles.themeButton}
+          onPress={() =>
+            setIsDarkMode((current) => !current)
+          }
+          activeOpacity={0.7}
+        >
+          <Text style={styles.themeText}>
+            {isDarkMode ? "☀️" : "🌙"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content */}
+      <View style={styles.flex}>
+        <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          <Text style={[styles.title, { color: colors.textPrimary }]}>
-            What is your health{'\n'}
+          <Text
+            style={[
+              styles.title,
+              { color: colors.textPrimary },
+            ]}
+          >
+            What is your health{"\n"}
             goal for the app?
           </Text>
 
-          <View style={styles.optionsContainer}>
+          <View style={styles.options}>
             {healthGoals.map((goal) => {
-              const isSelected = selectedGoal === goal.id;
+              const selected =
+                selectedGoal === goal.id;
+
               return (
                 <TouchableOpacity
                   key={goal.id}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    handleSelectGoal(goal.id)
+                  }
                   style={[
-                    styles.optionCard,
-                    { 
-                      backgroundColor: isSelected ? colors.cardSelectedBg : colors.cardBg,
-                      borderColor: isSelected ? colors.cardSelected : colors.cardBorder,
+                    styles.option,
+                    {
+                      backgroundColor: selected
+                        ? colors.selectedCard
+                        : colors.card,
+
+                      borderColor: selected
+                        ? colors.primary
+                        : colors.cardBorder,
                     },
                   ]}
-                  onPress={() => handleSelectGoal(goal.id)}
-                  activeOpacity={0.7}
                 >
                   <View style={styles.optionContent}>
-                    <Text style={styles.optionIcon}>{goal.icon}</Text>
-                    <Text style={[styles.optionLabel, { color: colors.textPrimary }]}>
+                    <Text style={styles.optionIcon}>
+                      {goal.icon}
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.optionLabel,
+                        {
+                          color: colors.textPrimary,
+                        },
+                      ]}
+                    >
                       {goal.label}
                     </Text>
                   </View>
-                  {isSelected && (
-                    <View style={[styles.checkmarkCircle, { backgroundColor: colors.checkmark }]}>
-                      <Text style={styles.checkmarkText}>✓</Text>
+
+                  {selected && (
+                    <View
+                      style={[
+                        styles.check,
+                        {
+                          backgroundColor:
+                            colors.primary,
+                        },
+                      ]}
+                    >
+                      <Text style={styles.checkText}>
+                        ✓
+                      </Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -157,19 +255,31 @@ const HealthGoalsScreen = () => {
           </View>
         </ScrollView>
 
+        {/* Footer */}
         <View style={styles.footer}>
           <TouchableOpacity
-            style={[
-              styles.continueButton, 
-              { backgroundColor: selectedGoal ? colors.buttonBg : colors.buttonDisabled }
-            ]}
-            onPress={handleContinue}
+            activeOpacity={0.8}
             disabled={!selectedGoal}
+            onPress={handleContinue}
+            style={[
+              styles.continueButton,
+              {
+                backgroundColor: selectedGoal
+                  ? colors.primary
+                  : colors.disabled,
+              },
+            ]}
           >
-            <Text style={[
-              styles.continueButtonText,
-              { color: selectedGoal ? '#FFFFFF' : colors.buttonTextDisabled }
-            ]}>
+            <Text
+              style={[
+                styles.continueText,
+                {
+                  color: selectedGoal
+                    ? "#FFFFFF"
+                    : colors.disabledText,
+                },
+              ]}
+            >
               Continue →
             </Text>
           </TouchableOpacity>
@@ -184,120 +294,131 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
   },
-  // New style for the container replacing KeyboardAvoidingView
-  flexContainer: {
+
+  flex: {
     flex: 1,
   },
-  headerButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
+
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
-  },
-  backButton: {
-    paddingHorizontal: 8,
     paddingVertical: 8,
   },
-  backButtonText: {
-    fontSize: 24,
-    fontWeight: '300',
+
+  backButton: {
+    padding: 8,
   },
-  horizontalLine: {
+
+  backText: {
+    fontSize: 28,
+    fontWeight: "300",
+  },
+
+  headerLine: {
     flex: 1,
     height: 1,
     marginHorizontal: 12,
   },
+
   skipButton: {
     paddingHorizontal: 8,
     paddingVertical: 8,
   },
-  skipButtonText: {
+
+  skipText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
-  themeToggleContainer: {
-    alignItems: 'flex-end',
+
+  themeContainer: {
+    alignItems: "flex-end",
     paddingVertical: 4,
   },
-  themeToggle: {
+
+  themeButton: {
     padding: 8,
   },
-  themeToggleText: {
-    fontSize: 24,
+
+  themeText: {
+    fontSize: 22,
   },
-  scrollView: {
-    flex: 1,
-  },
+
   scrollContent: {
+    paddingTop: 10,
     paddingBottom: 20,
-    flexGrow: 1, // Ensures the scroll view takes up available space
   },
+
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontWeight: "600",
     lineHeight: 36,
     marginBottom: 24,
-    marginTop: 10,
   },
-  optionsContainer: {
+
+  options: {
     gap: 12,
   },
-  optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+
+  option: {
+    minHeight: 68,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 2,
   },
+
   optionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
   },
+
   optionIcon: {
     fontSize: 22,
     marginRight: 14,
   },
+
   optionLabel: {
-    fontSize: 16,
-    fontWeight: '500',
     flex: 1,
-    flexWrap: 'wrap',
+    fontSize: 16,
+    fontWeight: "500",
   },
-  checkmarkCircle: {
+
+  check: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginLeft: 8,
   },
-  checkmarkText: {
-    color: '#FFFFFF',
+
+  checkText: {
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "700",
   },
+
   footer: {
-    paddingBottom: 40,
     paddingTop: 10,
+    paddingBottom: 24,
   },
+
   continueButton: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 30,
     paddingVertical: 16,
-    paddingHorizontal: 48,
-    width: '100%',
-    alignItems: 'center',
-    shadowColor: '#4A6FFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  continueButtonText: {
+
+  continueText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

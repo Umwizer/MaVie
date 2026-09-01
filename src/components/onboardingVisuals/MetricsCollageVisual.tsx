@@ -1,5 +1,6 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants/theme"; // adjust path
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const HEART_WAVE = [0.6, 0.9, 0.5, 0.8, 0.4, 0.7, 0.3];
@@ -8,66 +9,97 @@ const SLEEP_LOGGED = [true, false, true, true, false, true, false];
 
 export default function MetricsCollageVisual() {
   return (
-    <View className="flex-1 w-full justify-center gap-3">
-      <View className="bg-card rounded-2xl p-4">
-        <View className="flex-row justify-between items-center mb-3">
+    <View style={styles.container}>
+      {/* Heart Card */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
           <Ionicons name="heart" size={20} color="#F43F5E" />
-          <View className="flex-row items-center gap-1">
-            <Text className="text-textSecondary text-xs">Today</Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.headerText}>Today</Text>
             <Ionicons name="chevron-forward" size={12} color="#9AA3B2" />
           </View>
         </View>
-        <View className="flex-row items-end justify-between">
+        <View style={styles.cardBody}>
           <View>
-            <Text className="text-textPrimary text-2xl font-bold">72<Text className="text-sm font-normal"> bpm</Text></Text>
-            <Text className="text-textSecondary text-xs mt-1">Resting Rate</Text>
+            <Text style={styles.valueText}>
+              72<Text style={styles.unitText}> bpm</Text>
+            </Text>
+            <Text style={styles.subText}>Resting Rate</Text>
           </View>
-          <View className="flex-row items-end gap-1 h-10">
+          <View style={styles.waveContainer}>
             {HEART_WAVE.map((h, i) => (
-              <View key={i} className="w-1 rounded-full bg-[#F43F5E]" style={{ height: 36 * h, opacity: 0.5 + h * 0.5 }} />
+              <View
+                key={i}
+                style={[
+                  styles.waveBar,
+                  {
+                    height: 36 * h,
+                    opacity: 0.5 + h * 0.5,
+                    backgroundColor: "#F43F5E"
+                  }
+                ]}
+              />
             ))}
           </View>
         </View>
       </View>
 
-      <View className="bg-card rounded-2xl p-4">
-        <View className="flex-row justify-between items-center mb-3">
+      {/* Sleep Card */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
           <Ionicons name="moon" size={20} color="#8B5CF6" />
-          <View className="flex-row items-center gap-1">
-            <Text className="text-textSecondary text-xs">Today</Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.headerText}>Today</Text>
             <Ionicons name="chevron-forward" size={12} color="#9AA3B2" />
           </View>
         </View>
-        <Text className="text-textPrimary text-2xl font-bold">8.2<Text className="text-sm font-normal"> hr</Text></Text>
-        <Text className="text-textSecondary text-xs mb-3">Well-rested</Text>
-        <View className="flex-row justify-between">
+        <Text style={styles.valueText}>
+          8.2<Text style={styles.unitText}> hr</Text>
+        </Text>
+        <Text style={styles.subText}>Well-rested</Text>
+        <View style={styles.sleepRow}>
           {SLEEP_LOGGED.map((logged, i) => (
-            <View key={i} className="items-center gap-1">
-              <View className={logged ? "w-6 h-6 rounded-full items-center justify-center bg-[#8B5CF6]" : "w-6 h-6 rounded-full items-center justify-center bg-[#1E2740]"}>
+            <View key={i} style={styles.dayColumn}>
+              <View style={[
+                styles.dayDot,
+                { backgroundColor: logged? "#8B5CF6" : "#1E2740" }
+              ]}>
                 {logged && <Ionicons name="checkmark" size={12} color="#FFFFFF" />}
               </View>
-              <Text className="text-navInactive text-[10px]">{DAYS[i]}</Text>
+              <Text style={styles.dayLabel}>{DAYS[i]}</Text>
             </View>
           ))}
         </View>
       </View>
 
-      <View className="bg-card rounded-2xl p-4">
-        <View className="flex-row justify-between items-center mb-3">
-          <Ionicons name="water" size={20} color="#2F6FED" />
-          <View className="flex-row items-center gap-1">
-            <Text className="text-textSecondary text-xs">Today</Text>
+      {/* Water Card */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="water" size={20} color={colors.primary} />
+          <View style={styles.headerRight}>
+            <Text style={styles.headerText}>Today</Text>
             <Ionicons name="chevron-forward" size={12} color="#9AA3B2" />
           </View>
         </View>
-        <View className="flex-row items-end justify-between">
+        <View style={styles.cardBody}>
           <View>
-            <Text className="text-textPrimary text-2xl font-bold">2,125<Text className="text-sm font-normal"> ml</Text></Text>
-            <Text className="text-textSecondary text-xs mt-1">On Track</Text>
+            <Text style={styles.valueText}>
+              2,125<Text style={styles.unitText}> ml</Text>
+            </Text>
+            <Text style={styles.subText}>On Track</Text>
           </View>
-          <View className="flex-row items-end gap-1.5 h-10">
+          <View style={styles.waterBarContainer}>
             {WATER_BARS.map((h, i) => (
-              <View key={i} className="w-1.5 rounded-full bg-primary" style={{ height: 36 * h }} />
+              <View
+                key={i}
+                style={[
+                  styles.waterBar,
+                  {
+                    height: 36 * h,
+                    backgroundColor: colors.primary
+                  }
+                ]}
+              />
             ))}
           </View>
         </View>
@@ -75,3 +107,92 @@ export default function MetricsCollageVisual() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    gap: 12, // if gap errors, add marginBottom: 12 to card
+  },
+  card: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 16,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4, // if gap errors, add marginRight: 4 to headerText
+  },
+  headerText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
+  cardBody: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  valueText: {
+    color: colors.textPrimary,
+    fontSize: 24,
+    fontWeight: "700",
+  },
+  unitText: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: colors.textPrimary,
+  },
+  subText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  waveContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    height: 40,
+    gap: 4,
+  },
+  waveBar: {
+    width: 4,
+    borderRadius: 8,
+  },
+  waterBarContainer: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    height: 40,
+    gap: 6,
+  },
+  waterBar: {
+    width: 6,
+    borderRadius: 8,
+  },
+  sleepRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  dayColumn: {
+    alignItems: "center",
+    gap: 4,
+  },
+  dayDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dayLabel: {
+    color: colors.navInactive,
+    fontSize: 10,
+  },
+});

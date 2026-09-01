@@ -1,5 +1,6 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../../constants/theme"; // adjust path
 
 const MACROS = [
   { label: "Carb", value: "35/77g", color: "#F59E0B", pct: 0.45 },
@@ -9,43 +10,146 @@ const MACROS = [
 
 export default function NutritionRingVisual() {
   return (
-    <View className="flex-1 w-full justify-center gap-3">
-      <View className="bg-card rounded-2xl p-5 flex-row items-center justify-between">
-        <View className="items-center gap-2">
-          <View className="w-8 h-8 rounded-full bg-[#1E2740] items-center justify-center">
+    <View style={styles.container}>
+      {/* Top Stats Card */}
+      <View style={styles.statsCard}>
+        {/* Consumed */}
+        <View style={styles.statColumn}>
+          <View style={styles.checkCircle}>
             <Ionicons name="checkmark" size={16} color="#FFFFFF" />
           </View>
-          <Text className="text-textPrimary text-lg font-bold">656</Text>
-          <Text className="text-textSecondary text-xs">Consumed</Text>
+          <Text style={styles.statValue}>656</Text>
+          <Text style={styles.statLabel}>Consumed</Text>
         </View>
 
-        <View className="w-28 h-28 rounded-full border-4 border-[#1E2740] items-center justify-center">
-          <View
-            className="absolute w-28 h-28 rounded-full border-4 border-primary"
-            style={{ borderLeftColor: "transparent", borderBottomColor: "transparent", transform: [{ rotate: "45deg" }] }}
-          />
-          <Text className="text-textPrimary text-xl font-bold">584</Text>
-          <Text className="text-textSecondary text-[10px]">Remaining</Text>
+        {/* Ring */}
+        <View style={styles.ring}>
+          <View style={styles.ringProgress} />
+          <Text style={styles.ringValue}>584</Text>
+          <Text style={styles.ringLabel}>Remaining</Text>
         </View>
 
-        <View className="items-center gap-2">
+        {/* Target */}
+        <View style={styles.statColumn}>
           <Ionicons name="locate" size={20} color="#9AA3B2" />
-          <Text className="text-textPrimary text-lg font-bold">1220</Text>
-          <Text className="text-textSecondary text-xs">Target</Text>
+          <Text style={styles.statValue}>1220</Text>
+          <Text style={styles.statLabel}>Target</Text>
         </View>
       </View>
 
-      <View className="bg-card rounded-2xl p-4 flex-row justify-between">
+      {/* Macros Card */}
+      <View style={styles.macrosCard}>
         {MACROS.map((m) => (
-          <View key={m.label} className="items-center flex-1">
-            <Text className="text-textSecondary text-xs mb-2">{m.label}</Text>
-            <View className="w-full h-1.5 rounded-full bg-[#1E2740] mb-2">
-              <View className="h-full rounded-full" style={{ width: `${m.pct * 100}%`, backgroundColor: m.color }} />
+          <View key={m.label} style={styles.macroColumn}>
+            <Text style={styles.macroLabel}>{m.label}</Text>
+            <View style={styles.macroTrack}>
+              <View style={[styles.macroFill, { width: `${m.pct * 100}%`, backgroundColor: m.color }]} />
             </View>
-            <Text className="text-textPrimary text-[11px]">{m.value}</Text>
+            <Text style={styles.macroValue}>{m.value}</Text>
           </View>
         ))}
       </View>
     </View>
   );
 }
+
+const RING_SIZE = 112; // w-28 h-28
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    justifyContent: "center",
+    gap: 12, // if gap errors, add marginBottom: 12 to statsCard
+  },
+  statsCard: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  statColumn: {
+    alignItems: "center",
+    gap: 8, // if gap errors, add marginBottom to children
+  },
+  checkCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#1E2740",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statValue: {
+    color: colors.textPrimary,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  statLabel: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
+  ring: {
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    borderWidth: 4,
+    borderColor: "#1E2740",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ringProgress: {
+    position: "absolute",
+    width: RING_SIZE,
+    height: RING_SIZE,
+    borderRadius: RING_SIZE / 2,
+    borderWidth: 4,
+    borderColor: colors.primary,
+    borderLeftColor: "transparent",
+    borderBottomColor: "transparent",
+    transform: [{ rotate: "45deg" }],
+  },
+  ringValue: {
+    color: colors.textPrimary,
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  ringLabel: {
+    color: colors.textSecondary,
+    fontSize: 10,
+  },
+  macrosCard: {
+    backgroundColor: colors.cardBackground,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  macroColumn: {
+    alignItems: "center",
+    flex: 1,
+  },
+  macroLabel: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  macroTrack: {
+    width: "100%",
+    height: 6,
+    borderRadius: 8,
+    backgroundColor: "#1E2740",
+    marginBottom: 8,
+    overflow: "hidden",
+  },
+  macroFill: {
+    height: "100%",
+    borderRadius: 8,
+  },
+  macroValue: {
+    color: colors.textPrimary,
+    fontSize: 11,
+  },
+});

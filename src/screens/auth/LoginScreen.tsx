@@ -32,6 +32,8 @@ export default function LoginScreen({ navigation }: Props) {
     setSubmitting(true);
     try {
       await signIn(email, password);
+      // Navigate to comprehensive assessment after successful login
+      navigation.navigate("OnboardingReady");
     } catch (e: any) {
       setAuthError(e.message);
     } finally {

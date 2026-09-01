@@ -8,14 +8,18 @@ import {
   Dimensions,
   ListRenderItemInfo,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../navigation/types"
-import { colors } from "../../constants/theme";
-import { SLIDES, Slide } from "../../constants/onboardingSlides";
+import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Onboarding">;
+import type { RootStackParamList } from "../../navigation/types";
+import { colors } from "../../constants/theme";
+import { SLIDES, Slide } from "../../constants/onboardingSlides";
+
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  "OnboardingScreen"
+>;
 
 const { width } = Dimensions.get("window");
 
@@ -24,36 +28,51 @@ export default function OnboardingScreen({ navigation }: Props) {
 
   const listRef = useRef<FlatList<Slide>>(null);
 
+  const isFirst = index === 0;
   const isLast = index === SLIDES.length - 1;
 
-  const goTo = (i: number) => {
-    if (i < 0 || i >= SLIDES.length) return;
+  const goTo = (newIndex: number) => {
+    if (newIndex < 0 || newIndex >= SLIDES.length) {
+      return;
+    }
 
     listRef.current?.scrollToIndex({
-      index: i,
+      index: newIndex,
       animated: true,
     });
 
-    setIndex(i);
+    setIndex(newIndex);
   };
 
-  const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
-    <View style={[styles.slide, { width }]}>
-      <Text style={styles.title}>{item.title}</Text>
+  const renderItem = ({
+    item,
+  }: ListRenderItemInfo<Slide>) => {
+    const VisualComponent = item.Visual;
 
-      <Text style={styles.description}>
-        {item.description}
-      </Text>
+    return (
+      <View style={styles.slide}>
+        <View style={styles.visualContainer}>
+          <VisualComponent />
+        </View>
 
-      <View style={styles.iconWrap}>
-        <Ionicons
-          name={item.icon}
-          size={200}
-          color={colors.primary}
-        />
+        <Text style={styles.title}>
+          {item.title}
+        </Text>
+
+        <Text style={styles.description}>
+          {item.description}
+        </Text>
       </View>
-    </View>
-  );
+    );
+  };
+
+  const handleScrollEnd = (event: any) => {
+    const newIndex = Math.round(
+      event.nativeEvent.contentOffset.x / width
+    );
+
+    setIndex(newIndex);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -63,7 +82,9 @@ export default function OnboardingScreen({ navigation }: Props) {
           style={[
             styles.progressFill,
             {
-              width: `${((index + 1) / SLIDES.length) * 100}%`,
+              width: `${
+                ((index + 1) / SLIDES.length) * 100
+              }%`,
             },
           ]}
         />
@@ -78,70 +99,58 @@ export default function OnboardingScreen({ navigation }: Props) {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, i) => String(i)}
         renderItem={renderItem}
-        onMomentumScrollEnd={(e) => {
-          const i = Math.round(
-            e.nativeEvent.contentOffset.x / width
-          );
-
-          setIndex(i);
-        }}
+        onMomentumScrollEnd={handleScrollEnd}
+        style={styles.list}
       />
 
       {/* Footer */}
       <View style={styles.footer}>
         {!isLast ? (
-          <>
-            <View style={styles.navRow}>
-              {/* Previous */}
-              <Pressable
-                style={styles.navBtn}
-                onPress={() => goTo(index - 1)}
-                disabled={index === 0}
-              >
-                <Ionicons
-                  name="chevron-back"
-                  size={20}
-                  color={
-                    index === 0
-                      ? colors.navInactive
-                      : colors.textPrimary
-                  }
-                />
-              </Pressable>
+          <View style={styles.navigationContainer}>
+            {/* Back button */}
+            <Pressable
+              style={[
+                styles.circleButton,
+                isFirst && styles.circleButtonDisabled,
+              ]}
+              onPress={() => goTo(index - 1)}
+              disabled={isFirst}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={20}
+                color={
+                  isFirst
+                    ? colors.navInactive
+                    : colors.textPrimary
+                }
+              />
+            </Pressable>
 
-              {/* Next */}
-              <Pressable
-                style={styles.navBtn}
-                onPress={() => goTo(index + 1)}
-              >
-                <Ionicons
-                  name="chevron-forward"
-                  size={20}
-                  color={colors.textPrimary}
-                />
-              </Pressable>
-            </View>
-          </>
+            {/* Next button */}
+            <Pressable
+              style={styles.circleButton}
+              onPress={() => goTo(index + 1)}
+            >
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.textPrimary}
+              />
+            </Pressable>
+          </View>
         ) : (
-          <>
-            <Pressable
-              style={styles.primaryButton}
-              onPress={() => navigation.navigate("Login")}
-            >
-              <Text style={styles.primaryButtonText}>
-                Login
-              </Text>
-            </Pressable>
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => navigation.navigate("Signup")}
-            >
-              <Text style={styles.secondaryButtonText}>
-                Create Account
-              </Text>
-            </Pressable>
-          </>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.primaryButtonText}>
+              Continue
+            </Text>
+          </Pressable>
         )}
+
+        {/* Slide number */}
         <Text style={styles.progressText}>
           {index + 1} / {SLIDES.length}
         </Text>
@@ -156,64 +165,52 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  slide: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 32,
+  list: {
+    flex: 1,
   },
 
-  iconWrap: {
-    width: 300,
-    height: 300,
-    borderRadius: 24,
-    backgroundColor: colors.cardBackground,
+  slide: {
+    width: width,
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 50,
+    paddingHorizontal: 24,
+  },
+
+  visualContainer: {
+    width: 300,
+    height: 300,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 30,
   },
 
   title: {
     color: colors.textPrimary,
-    fontSize: 25,
+    fontSize: 26,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 12,
+    paddingHorizontal: 8,
   },
 
   description: {
     color: colors.textSecondary,
-    fontSize: 18,
+    fontSize: 16,
     textAlign: "center",
     lineHeight: 24,
+    paddingHorizontal: 16,
   },
 
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    gap: 12,
-  },
-
-  navRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 12,
-  },
-
-  navBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.cardBackground,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  /* Progress bar */
 
   progressTrack: {
-    height: 3,
+    height: 4,
     borderRadius: 2,
     backgroundColor: colors.progressTrack,
+    marginHorizontal: 24,
+    marginTop: 16,
     overflow: "hidden",
-    marginTop: 20,
   },
 
   progressFill: {
@@ -221,7 +218,56 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
 
+  /* Footer */
+
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+    alignItems: "center",
+  },
+
+  /* Back + Next container */
+
+  navigationContainer: {
+    flexDirection: "row",
+
+    /*
+     * Small gap between the two circles
+     */
+    gap: 12,
+
+    /*
+     * Keeps the buttons together in the center
+     */
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  /* Circular buttons */
+
+  circleButton: {
+    width: 48,
+    height: 48,
+
+    borderRadius: 24,
+
+    backgroundColor: colors.cardBackground,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+
+  circleButtonDisabled: {
+    opacity: 0.35,
+  },
+
+  /* Continue button */
+
   primaryButton: {
+    width: "100%",
     height: 52,
     borderRadius: 12,
     backgroundColor: colors.primary,
@@ -235,24 +281,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  secondaryButton: {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  secondaryButtonText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: "700",
-  },
+  /* Slide counter */
 
   progressText: {
     color: colors.textSecondary,
     textAlign: "center",
     fontSize: 12,
+    marginTop: 12,
   },
 });

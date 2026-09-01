@@ -39,6 +39,14 @@ const WelcomeScreen = () => {
     navigation.navigate('OnboardingReady');
   };
 
+  const handleLogin = () => {
+    navigation.navigate('Login');
+  };
+
+  const handleSignUp = () => {
+    navigation.navigate('signUp');
+  };
+
   const handleHelp = () => {
     console.log('Help pressed!');
   };
@@ -88,19 +96,27 @@ const WelcomeScreen = () => {
 
         {/* Title with ONLY MaVie in Blue */}
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Let's fully set up your{'\n'}<Text style={{ color: colors.accent }}>MaVie</Text> account.
+          Welcome to{'\n'}<Text style={{ color: colors.accent }}>MaVie</Text>
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Here's what we'll do over the next minutes.
+          Your all-in-one health companion
         </Text>
 
-        {/* Big Blue "I'm Ready" Button */}
+        {/* Login and SignUp Buttons */}
         <TouchableOpacity
-          style={styles.readyButton}
-          onPress={handleReady}
+          style={[styles.readyButton, { backgroundColor: colors.accent }]}
+          onPress={handleLogin}
           activeOpacity={0.8}
         >
-          <Text style={styles.readyButtonText}>I'm Ready  →</Text>
+          <Text style={styles.readyButtonText}>Sign In  →</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.readyButton, { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.accent }]}
+          onPress={handleSignUp}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.readyButtonText, { color: colors.accent }]}>Create Account  →</Text>
         </TouchableOpacity>
 
         {/* Blue "I need help" Link */}

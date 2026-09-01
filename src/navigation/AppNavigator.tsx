@@ -1,65 +1,144 @@
-import { useState, useEffect } from "react";
-import { User, onAuthStateChanged } from "firebase/auth";
-import { auth } from "../services/firebase";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { View, ActivityIndicator, Text } from "react-native";
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useAppReady } from "../loadingpage/loading";
+import React from "react";
+import { StyleSheet, View } from "react-native";
+
+import { NavigationContainer } from "@react-navigation/native";
+import {
+  createNativeStackNavigator,
+} from "@react-navigation/native-stack";
+
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
+
 import { AuthProvider } from "../context/AuthContext";
+
 import SplashScreen from "../SplashScreen/SplashScreen";
+import WelcomeScreen from "../screens/onbording/WelcomeScreen";
+
 import LoginScreen from "../screens/auth/LoginScreen";
 import SignupScreen from "../screens/auth/SignUpScreen";
-import type { RootStackParamList } from './types'; // add this import
 
-const Stack = createNativeStackNavigator<RootStackParamList>(); 
+import OnboardingReadyScreen from "../screens/onbording/OnboardingReadyScreen";
+import GenderScreen from "../screens/onbording/GenderScreen";
+import BirthDateScreen from "../screens/onbording/BirthDateScreen";
+import PersonalInfoScreen from "../screens/onbording/PersonalInfoScreen";
+import HealthGoalsScreen from "../screens/onbording/HealthGoalsScreen";
+import OnboardingScreen from "../screens/onbording/OnboardingScreen";
 
-export default function App() {
-  const { appIsReady, onLayoutRootView } = useAppReady();
-  const [hasStarted, setHasStarted] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+import ProfileSetupScreen from "../screens/profile/ProfileSetupScreen";
+import ProfileDetailsScreen from "../screens/profile/ProfileDetailsScreen";
+import AvatarSelectionScreen from "../screens/profile/AvatarSelectionScreen";
+import ChooseAvatarScreen from "../screens/profile/ChooseAvatarScreen";
 
-  useEffect(() => {
-    console.log("FIREBASE INIT CHECK");
-    console.log("API KEY:", process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.slice(0,5));
-    
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
-      console.log("AUTH STATE:", currentUser ? currentUser.email : "NO USER");
-      setUser(currentUser);
-      setAuthLoading(false);
-      
-      if (currentUser) {
-        setHasStarted(true);
-      }
-    });
-    return () => unsub();
-  }, []);
+import HomeScreen from "../screens/home/HomeScreen";
 
-  if (!appIsReady || authLoading) {
-    return <View style={{flex:1,justifyContent:'center',alignItems:'center'}}><ActivityIndicator size="large" /></View>;
-  }
+import type { RootStackParamList } from "./types";
 
+const Stack =
+  createNativeStackNavigator<RootStackParamList>();
+
+function RootNavigator() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Splash"
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+        }}
+      >
+        <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+        />
+         <Stack.Screen
+          name="OnboardingScreen"
+          component={OnboardingScreen}
+        />
+
+        <Stack.Screen
+          name="Welcome"
+          component={WelcomeScreen}
+        />
+
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+        />
+
+        <Stack.Screen
+          name="signUp"
+          component={SignupScreen}
+        />
+
+        <Stack.Screen
+          name="OnboardingReady"
+          component={OnboardingReadyScreen}
+        />
+
+        <Stack.Screen
+          name="Gender"
+          component={GenderScreen}
+        />
+
+        <Stack.Screen
+          name="BirthDate"
+          component={BirthDateScreen}
+        />
+
+        <Stack.Screen
+          name="PersonalInfo"
+          component={PersonalInfoScreen}
+        />
+
+        <Stack.Screen
+          name="HealthGoals"
+          component={HealthGoalsScreen}
+        />
+        <Stack.Screen
+          name="ProfileSetup"
+          component={ProfileSetupScreen}
+        />
+
+        <Stack.Screen
+          name="ProfileDetails"
+          component={ProfileDetailsScreen}
+        />
+
+        <Stack.Screen
+          name="AvatarSelection"
+          component={AvatarSelectionScreen}
+        />
+
+        <Stack.Screen
+          name="ChooseAvatar"
+          component={ChooseAvatarScreen}
+        />
+
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default function AppNavigator() {
   return (
     <AuthProvider>
-      <SafeAreaProvider onLayout={onLayoutRootView}>
-        <SafeAreaView style={{ flex: 1 }}>
-          {!hasStarted ? (
-            <SplashScreen onGetStarted={() => setHasStarted(true)} />
-          ) : (
-            <NavigationContainer>
-              <Stack.Navigator screenOptions={{ headerShown: false }}>
-                {user ? (
-                  // For now just show Login even if logged in. Replace later with Home
-                  <Stack.Screen name="Login" component={LoginScreen} />
-                ) : (
-                  <Stack.Screen name="signUp" component={SignupScreen} />
-                )}
-              </Stack.Navigator>
-            </NavigationContainer>
-          )}
-        </SafeAreaView>
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </View>
       </SafeAreaProvider>
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#121212",
+  },
+});

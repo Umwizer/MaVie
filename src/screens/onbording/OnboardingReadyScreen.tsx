@@ -1,5 +1,3 @@
-// src/screens/onbording/OnboardingReadyScreen.tsx
-
 import React, { useState } from 'react';
 import {
   View,
