@@ -41,8 +41,8 @@ const GenderScreen = () => {
     inputBg: isDarkMode ? '#1E293B' : '#FFFFFF',
   };
 
-  // TEMPORARY: Navigating to "Welcome" to prevent crash. Change to 'ChoosePlan' later
-  const handleNext = () => navigation.navigate('Welcome'); 
+  // UPDATED: Now navigates to Weight
+  const handleNext = () => navigation.navigate('Weight'); 
 
   const GenderOption = ({ label, icon, value }: { label: string, icon: string, value: string }) => {
     const isSelected = selectedGender === value;
@@ -72,7 +72,7 @@ const GenderScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={statusBarStyle} />
 
-      {/* Header with Back and Dark Mode Toggle */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={[styles.backButtonText, { color: colors.textPrimary }]}>←</Text>
