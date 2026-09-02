@@ -91,7 +91,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
       <View className="pb-5">
         <Pressable
           className="mb-3 h-11 items-center justify-center rounded-lg bg-primary"
-          onPress={() => navigation.navigate("Onboarding")}
+          onPress={() => navigation.navigate("SecurityQuestions",)}
         >
           <View className="flex-row items-center gap-2">
             <Text className="text-[14px] font-semibold text-white">Continue</Text>
