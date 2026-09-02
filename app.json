@@ -15,8 +15,8 @@
     "web": {
       "bundler": "metro"
     },
-    "plugins": [
-      "expo-splash-screen"
-    ]
+   "plugins": [
+  "expo-splash-screen"
+]
   }
 }

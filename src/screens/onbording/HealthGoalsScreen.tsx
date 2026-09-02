@@ -6,11 +6,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
-  Platform,
   useColorScheme,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -62,14 +61,8 @@ const HealthGoalsScreen = () => {
   const handleContinue = () => {
     if (selectedGoal) {
       console.log('Selected goal:', selectedGoal);
-      // Navigate to BirthDate screen with the selected goal
-      navigation.navigate('BirthDate', { selectedGoal: selectedGoal });
+      navigation.navigate('BirthDate');
     }
-  };
-
-  const handleSkip = () => {
-    // Navigate to BirthDate screen without a goal
-    navigation.navigate('BirthDate');
   };
 
   const handleSelectGoal = (goalId: string) => {
@@ -97,7 +90,7 @@ const HealthGoalsScreen = () => {
         
         <TouchableOpacity 
           style={styles.skipButton}
-          onPress={handleSkip}
+          onPress={() => navigation.navigate('BirthDate')}
         >
           <Text style={[styles.skipButtonText, { color: colors.skipText }]}>Skip</Text>
         </TouchableOpacity>
@@ -112,68 +105,65 @@ const HealthGoalsScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Replaced KeyboardAvoidingView with a plain View */}
-      <View style={styles.flexContainer}>
-        <ScrollView 
-          style={styles.scrollView}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          <Text style={[styles.title, { color: colors.textPrimary }]}>
-            What is your health{'\n'}
-            goal for the app?
-          </Text>
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          What is your health{'\n'}
+          goal for the app?
+        </Text>
 
-          <View style={styles.optionsContainer}>
-            {healthGoals.map((goal) => {
-              const isSelected = selectedGoal === goal.id;
-              return (
-                <TouchableOpacity
-                  key={goal.id}
-                  style={[
-                    styles.optionCard,
-                    { 
-                      backgroundColor: isSelected ? colors.cardSelectedBg : colors.cardBg,
-                      borderColor: isSelected ? colors.cardSelected : colors.cardBorder,
-                    },
-                  ]}
-                  onPress={() => handleSelectGoal(goal.id)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.optionContent}>
-                    <Text style={styles.optionIcon}>{goal.icon}</Text>
-                    <Text style={[styles.optionLabel, { color: colors.textPrimary }]}>
-                      {goal.label}
-                    </Text>
+        <View style={styles.optionsContainer}>
+          {healthGoals.map((goal) => {
+            const isSelected = selectedGoal === goal.id;
+            return (
+              <TouchableOpacity
+                key={goal.id}
+                style={[
+                  styles.optionCard,
+                  { 
+                    backgroundColor: isSelected ? colors.cardSelectedBg : colors.cardBg,
+                    borderColor: isSelected ? colors.cardSelected : colors.cardBorder,
+                  },
+                ]}
+                onPress={() => handleSelectGoal(goal.id)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.optionContent}>
+                  <Text style={styles.optionIcon}>{goal.icon}</Text>
+                  <Text style={[styles.optionLabel, { color: colors.textPrimary }]}>
+                    {goal.label}
+                  </Text>
+                </View>
+                {isSelected && (
+                  <View style={[styles.checkmarkCircle, { backgroundColor: colors.checkmark }]}>
+                    <Text style={styles.checkmarkText}>✓</Text>
                   </View>
-                  {isSelected && (
-                    <View style={[styles.checkmarkCircle, { backgroundColor: colors.checkmark }]}>
-                      <Text style={styles.checkmarkText}>✓</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </ScrollView>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.continueButton, 
-              { backgroundColor: selectedGoal ? colors.buttonBg : colors.buttonDisabled }
-            ]}
-            onPress={handleContinue}
-            disabled={!selectedGoal}
-          >
-            <Text style={[
-              styles.continueButtonText,
-              { color: selectedGoal ? '#FFFFFF' : colors.buttonTextDisabled }
-            ]}>
-              Continue →
-            </Text>
-          </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.continueButton, 
+            { backgroundColor: selectedGoal ? colors.buttonBg : colors.buttonDisabled }
+          ]}
+          onPress={handleContinue}
+          disabled={!selectedGoal}
+        >
+          <Text style={[
+            styles.continueButtonText,
+            { color: selectedGoal ? '#FFFFFF' : colors.buttonTextDisabled }
+          ]}>
+            Continue →
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -183,10 +173,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-  },
-  // New style for the container replacing KeyboardAvoidingView
-  flexContainer: {
-    flex: 1,
   },
   headerButtons: {
     flexDirection: 'row',
@@ -230,7 +216,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 20,
-    flexGrow: 1, // Ensures the scroll view takes up available space
   },
   title: {
     fontSize: 28,

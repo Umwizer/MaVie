@@ -1,6 +1,5 @@
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
 export type RootStackParamList = {
+  Splash: undefined;
   Welcome: undefined;
   OnboardingReady: undefined;
   PersonalInfo: undefined;
@@ -23,6 +22,6 @@ export type RootStackParamList = {
   Allergy: undefined;
   MedicalConditions: undefined;
   MedicalConditionList: undefined;
-  MedicalConditionSearch: undefined; // <-- ADD THIS
+  MedicalConditionSearch: undefined;
   NextScreen: undefined;
 };
