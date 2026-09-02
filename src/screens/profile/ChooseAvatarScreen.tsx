@@ -41,7 +41,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container}>
       <Pressable
         style={styles.skipButton}
-        onPress={() => navigation.navigate("#")}
+        onPress={() => navigation.navigate("OnboardingSlides")}
       >
         <Text style={styles.skipText}>Skip</Text>
       </Pressable>
