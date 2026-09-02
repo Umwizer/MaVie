@@ -15,10 +15,8 @@
     "web": {
       "bundler": "metro"
     },
-    "plugins": [
-      "expo-splash-screen",
-      "expo-font",
-      "@react-native-community/datetimepicker"
-    ]
+   "plugins": [
+  "expo-splash-screen"
+]
   }
 }

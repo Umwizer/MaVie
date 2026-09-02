@@ -39,14 +39,6 @@ const WelcomeScreen = () => {
     navigation.navigate('OnboardingReady');
   };
 
-  const handleLogin = () => {
-    navigation.navigate('Login');
-  };
-
-  const handleSignUp = () => {
-    navigation.navigate('signUp');
-  };
-
   const handleHelp = () => {
     console.log('Help pressed!');
   };
@@ -57,29 +49,25 @@ const WelcomeScreen = () => {
 
       {/* Top Progress Bar */}
       <View style={styles.progressContainer}>
-        {/* The horizontal line behind the circles */}
         <View style={[styles.progressLine, { backgroundColor: colors.lineColor }]} />
         
-        {/* Assessment (Active) */}
         <View style={styles.progressItem}>
           <View style={[styles.circle, { borderColor: colors.accent, backgroundColor: colors.background }]}>
             <View style={[styles.circleDot, { backgroundColor: colors.accent }]} />
           </View>
           <Text style={[styles.label, { color: colors.textPrimary }]}>Assessment</Text>
         </View>
-        {/* Personal Info (Inactive) */}
         <View style={styles.progressItem}>
           <View style={[styles.circle, { borderColor: colors.lineColor, backgroundColor: colors.background }]} />
           <Text style={[styles.label, { color: colors.textSecondary }]}>Personal Info</Text>
         </View>
-        {/* Choose Plan (Inactive) */}
         <View style={styles.progressItem}>
           <View style={[styles.circle, { borderColor: colors.lineColor, backgroundColor: colors.background }]} />
           <Text style={[styles.label, { color: colors.textSecondary }]}>Choose Plan</Text>
         </View>
       </View>
 
-      {/* Dark Mode Toggle BELOW the Progress Bar */}
+      {/* Dark Mode Toggle below the Progress Bar */}
       <View style={styles.toggleContainer}>
         <TouchableOpacity onPress={toggleDarkMode} style={styles.themeToggle}>
           <Text style={styles.themeToggleText}>
@@ -89,34 +77,25 @@ const WelcomeScreen = () => {
       </View>
 
       <View style={styles.content}>
-        {/* Big Plus Icon */}
         <View style={styles.logoContainer}>
           <Text style={[styles.logoText, { color: colors.accent }]}>+</Text>
         </View>
 
         {/* Title with ONLY MaVie in Blue */}
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Welcome to{'\n'}<Text style={{ color: colors.accent }}>MaVie</Text>
+          Let's fully set up your{'\n'}<Text style={{ color: colors.accent }}>MaVie</Text> account.
         </Text>
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Your all-in-one health companion
+          Here's what we'll do over the next minutes.
         </Text>
 
-        {/* Login and SignUp Buttons */}
+        {/* Big Blue "I'm Ready" Button */}
         <TouchableOpacity
-          style={[styles.readyButton, { backgroundColor: colors.accent }]}
-          onPress={handleLogin}
+          style={styles.readyButton}
+          onPress={handleReady}
           activeOpacity={0.8}
         >
-          <Text style={styles.readyButtonText}>Sign In  →</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.readyButton, { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.accent }]}
-          onPress={handleSignUp}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.readyButtonText, { color: colors.accent }]}>Create Account  →</Text>
+          <Text style={styles.readyButtonText}>I'm Ready  →</Text>
         </TouchableOpacity>
 
         {/* Blue "I need help" Link */}

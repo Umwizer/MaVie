@@ -1,61 +1,37 @@
+// src/components/GlowIcon.tsx
+
 import React from 'react';
-import { View, StyleSheet, useColorScheme } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { colors } from '../constants/theme'; // adjust path
+import { View, Text, StyleSheet } from 'react-native';
 
-interface GlowIconProps {
+type GlowIconProps = {
+  color?: string;
   size?: number;
-}
+};
 
-export default function GlowIcon({ size = 32 }: GlowIconProps) {
-  const scheme = useColorScheme(); // RN built-in instead of nativewind
-  const isDark = scheme === 'dark';
-  const iconColor = colors.primary; // '#3D6FF2'
-
-  const layers = isDark
-    ? [
-        { scale: 4.5, opacity: 0.06 },
-        { scale: 3.6, opacity: 0.08 },
-        { scale: 2.8, opacity: 0.1 },
-        { scale: 2.1, opacity: 0.14 },
-        { scale: 1.6, opacity: 0.22 },
-      ]
-    : [
-        { scale: 4.5, opacity: 0.04 },
-        { scale: 3.6, opacity: 0.05 },
-        { scale: 2.8, opacity: 0.07 },
-        { scale: 2.1, opacity: 0.09 },
-        { scale: 1.6, opacity: 0.14 },
-      ];
-
+const GlowIcon = ({ color = '#4A6FFF', size = 60 }: GlowIconProps) => {
   return (
-    <View style={[styles.container, { width: size * 5, height: size * 5 }]}>
-      {layers.map((layer, i) => (
-        <View
-          key={i}
-          style={[
-            styles.glowLayer,
-            {
-              width: size * layer.scale,
-              height: size * layer.scale,
-              opacity: layer.opacity,
-              backgroundColor: iconColor,
-            },
-          ]}
-        />
-      ))}
-      <Feather name="plus" size={size} color={iconColor} />
+    <View style={[styles.container, { backgroundColor: color, width: size, height: size }]}>
+      <Text style={styles.plus}>+</Text>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
+    borderRadius: 16,
     justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#4A6FFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  glowLayer: {
-    position: 'absolute',
-    borderRadius: 9999, // rounded-full
+  plus: {
+    color: '#FFFFFF',
+    fontSize: 28,
+    fontWeight: 'bold',
   },
 });
+
+export default GlowIcon;

@@ -404,5 +404,5 @@ Everything is planned out:
 **Just follow the guides and implement one screen at a time!**
 
 Start with: `QUICK_START.md`
-
+b
 Good luck! 🚀

@@ -1,46 +1,28 @@
 export type RootStackParamList = {
   Splash: undefined;
   Welcome: undefined;
-  Onboarding: undefined;
   OnboardingReady: undefined;
-
-  Gender: undefined;
-
-  BirthDate:
-    | undefined
-    | {
-        selectedGoal?: string;
-      };
-
   PersonalInfo: undefined;
-
-  Login: undefined;
-  signUp: undefined;
-
-  ForgotPasswordMethod: undefined;
-
-  ForgotPasswordEmail: {
-    method: "email" | "sms" | "2fa";
-  };
-
-  ResetSent: {
-    email: string;
-  };
-
-  Home: undefined;
-
-  Height: undefined;
-  Weight: undefined;
-  ActivityLevel: undefined;
-  Goal: undefined;
-
+  Onboarding: undefined;
   HealthGoals: undefined;
-
-  ProfileSetup: undefined;
-  ProfileDetails: undefined;
-
-  AvatarSelection: undefined;
-  ChooseAvatar: undefined;
-  OnboardingAvatar: undefined;
-  OnboardingScreen: undefined;
+  BirthDate: undefined;
+  Gender: undefined;
+  Weight: undefined;
+  Height: undefined;
+  BloodType: undefined;
+  FitnessLevel: undefined;
+  SleepLevel: undefined;
+  ActivityPreference: undefined;
+  Mood: undefined;
+  Diet: undefined;
+  Calories: undefined;
+  Medication: undefined;
+  MedicationList: undefined;
+  MedicationNotFound: { searchedMedication: string };
+  Allergy: undefined;
+  MedicalConditions: undefined;
+  MedicalConditionList: undefined;
+  MedicalConditionSearch: undefined;
+  NextScreen: undefined;
+   Home: undefined;
 };

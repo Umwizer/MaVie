@@ -1,144 +1,69 @@
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { NavigationContainer } from "@react-navigation/native";
-import {
-  createNativeStackNavigator,
-} from "@react-navigation/native-stack";
+import SplashScreen from '../screens/SplashScreen';
+import WelcomeScreen from '../screens/onbording/WelcomeScreen';
+import OnboardingReadyScreen from '../screens/onbording/OnboardingReadyScreen';
+import PersonalInfoScreen from '../screens/onbording/PersonalInfoScreen';
+import HealthGoalsScreen from '../screens/onbording/HealthGoalsScreen';
+import BirthDateScreen from '../screens/onbording/BirthDateScreen';
+import GenderScreen from '../screens/onbording/GenderScreen';
+import WeightScreen from '../screens/onbording/WeightScreen';
+import HeightScreen from '../screens/onbording/HeightScreen';
+import BloodTypeScreen from '../screens/onbording/BloodTypeScreen';
+import FitnessLevelScreen from '../screens/onbording/FitnessLevelScreen';
+import SleepLevelScreen from '../screens/onbording/SleepLevelScreen';
+import ActivityPreferenceScreen from '../screens/onbording/ActivityPreferenceScreen';
+import MoodScreen from '../screens/onbording/MoodScreen';
+import DietScreen from '../screens/onbording/DietScreen';
+import CaloriesScreen from '../screens/onbording/CaloriesScreen';
+import MedicationScreen from '../screens/onbording/MedicationScreen';
+import MedicationListScreen from '../screens/onbording/MedicationListScreen';
+import MedicationNotFoundScreen from '../screens/onbording/MedicationNotFoundScreen';
+import AllergyScreen from '../screens/onbording/AllergyScreen';
+import MedicalConditionsScreen from '../screens/onbording/MedicalConditionsScreen';
+import MedicalConditionListScreen from '../screens/onbording/MedicalConditionListScreen';
+import MedicalConditionSearchScreen from '../screens/onbording/MedicalConditionSearchScreen';
+import NextScreen from '../screens/onbording/NextScreen';
+import HomeScreen from '../screens/HomeScreen';
+import type { RootStackParamList } from './types';
 
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-import { AuthProvider } from "../context/AuthContext";
-
-import SplashScreen from "../SplashScreen/SplashScreen";
-import WelcomeScreen from "../screens/onbording/WelcomeScreen";
-
-import LoginScreen from "../screens/auth/LoginScreen";
-import SignupScreen from "../screens/auth/SignUpScreen";
-
-import OnboardingReadyScreen from "../screens/onbording/OnboardingReadyScreen";
-import GenderScreen from "../screens/onbording/GenderScreen";
-import BirthDateScreen from "../screens/onbording/BirthDateScreen";
-import PersonalInfoScreen from "../screens/onbording/PersonalInfoScreen";
-import HealthGoalsScreen from "../screens/onbording/HealthGoalsScreen";
-import OnboardingScreen from "../screens/onbording/OnboardingScreen";
-
-import ProfileSetupScreen from "../screens/profile/ProfileSetupScreen";
-import ProfileDetailsScreen from "../screens/profile/ProfileDetailsScreen";
-import AvatarSelectionScreen from "../screens/profile/AvatarSelectionScreen";
-import ChooseAvatarScreen from "../screens/profile/ChooseAvatarScreen";
-
-import HomeScreen from "../screens/home/HomeScreen";
-
-import type { RootStackParamList } from "./types";
-
-const Stack =
-  createNativeStackNavigator<RootStackParamList>();
-
-function RootNavigator() {
+export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Splash"
-        screenOptions={{
-          headerShown: false,
-          animation: "slide_from_right",
-        }}
+        screenOptions={{ headerShown: false, animation: "fade" }}
       >
-        <Stack.Screen
-          name="Splash"
-          component={SplashScreen}
-        />
-         <Stack.Screen
-          name="OnboardingScreen"
-          component={OnboardingScreen}
-        />
-
-        <Stack.Screen
-          name="Welcome"
-          component={WelcomeScreen}
-        />
-
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-        />
-
-        <Stack.Screen
-          name="signUp"
-          component={SignupScreen}
-        />
-
-        <Stack.Screen
-          name="OnboardingReady"
-          component={OnboardingReadyScreen}
-        />
-
-        <Stack.Screen
-          name="Gender"
-          component={GenderScreen}
-        />
-
-        <Stack.Screen
-          name="BirthDate"
-          component={BirthDateScreen}
-        />
-
-        <Stack.Screen
-          name="PersonalInfo"
-          component={PersonalInfoScreen}
-        />
-
-        <Stack.Screen
-          name="HealthGoals"
-          component={HealthGoalsScreen}
-        />
-        <Stack.Screen
-          name="ProfileSetup"
-          component={ProfileSetupScreen}
-        />
-
-        <Stack.Screen
-          name="ProfileDetails"
-          component={ProfileDetailsScreen}
-        />
-
-        <Stack.Screen
-          name="AvatarSelection"
-          component={AvatarSelectionScreen}
-        />
-
-        <Stack.Screen
-          name="ChooseAvatar"
-          component={ChooseAvatarScreen}
-        />
-
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-        />
+        <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="OnboardingReady" component={OnboardingReadyScreen} />
+        <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+        <Stack.Screen name="HealthGoals" component={HealthGoalsScreen} />
+        <Stack.Screen name="BirthDate" component={BirthDateScreen} />
+        <Stack.Screen name="Gender" component={GenderScreen} />
+        <Stack.Screen name="Weight" component={WeightScreen} />
+        <Stack.Screen name="Height" component={HeightScreen} />
+        <Stack.Screen name="BloodType" component={BloodTypeScreen} />
+        <Stack.Screen name="FitnessLevel" component={FitnessLevelScreen} />
+        <Stack.Screen name="SleepLevel" component={SleepLevelScreen} />
+        <Stack.Screen name="ActivityPreference" component={ActivityPreferenceScreen} />
+        <Stack.Screen name="Mood" component={MoodScreen} />
+        <Stack.Screen name="Diet" component={DietScreen} />
+        <Stack.Screen name="Calories" component={CaloriesScreen} />
+        <Stack.Screen name="Medication" component={MedicationScreen} />
+        <Stack.Screen name="MedicationList" component={MedicationListScreen} />
+        <Stack.Screen name="MedicationNotFound" component={MedicationNotFoundScreen} />
+        <Stack.Screen name="Allergy" component={AllergyScreen} />
+        <Stack.Screen name="MedicalConditions" component={MedicalConditionsScreen} />
+        <Stack.Screen name="MedicalConditionList" component={MedicalConditionListScreen} />
+        <Stack.Screen name="MedicalConditionSearch" component={MedicalConditionSearchScreen} />
+        <Stack.Screen name="NextScreen" component={NextScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-export default function AppNavigator() {
-  return (
-    <AuthProvider>
-      <SafeAreaProvider>
-        <View style={styles.container}>
-          <StatusBar style="light" />
-          <RootNavigator />
-        </View>
-      </SafeAreaProvider>
-    </AuthProvider>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-});
