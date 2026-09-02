@@ -13,7 +13,7 @@ import type { RootStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
-  "ChooseAvatar"
+  "ProfileSetupScreen"
 >;
 
 const STEPS = [

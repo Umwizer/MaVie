@@ -1,27 +1,77 @@
-import React from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { useColorScheme } from 'nativewind';
-import { Feather } from '@expo/vector-icons';
+import React from "react";
+import {
+  Pressable,
+  Text,
+  StyleSheet,
+  useColorScheme,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
 
 export default function ThemeToggle() {
-  const { colorScheme, toggleColorScheme } = useColorScheme();
-  const isDark = colorScheme === 'dark';
+  const colorScheme = useColorScheme();
+
+  const isDark = colorScheme === "dark";
 
   return (
     <Pressable
-      onPress={toggleColorScheme}
-      className="flex-row items-center gap-2 rounded-full px-3 py-2 bg-gray-100 dark:bg-gray-800"
+      style={({ pressed }) => [
+        styles.container,
+        isDark ? styles.darkContainer : styles.lightContainer,
+        pressed && styles.pressed,
+      ]}
       accessibilityRole="button"
-      accessibilityLabel={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      accessibilityLabel={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
       <Feather
-        name={isDark ? 'moon' : 'sun'}
+        name={isDark ? "moon" : "sun"}
         size={16}
-        color={isDark ? '#9AA0B4' : '#5B6072'}
+        color={isDark ? "#9AA0B4" : "#5B6072"}
       />
-      <Text className="text-xs font-medium text-gray-700 dark:text-gray-300">
-        {isDark ? 'Dark' : 'Light'}
+
+      <Text
+        style={[
+          styles.text,
+          isDark ? styles.darkText : styles.lightText,
+        ]}
+      >
+        {isDark ? "Dark" : "Light"}
       </Text>
     </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  lightContainer: {
+    backgroundColor: "#F3F4F6",
+  },
+
+  darkContainer: {
+    backgroundColor: "#1F2937",
+  },
+
+  pressed: {
+    opacity: 0.7,
+  },
+
+  text: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+
+  lightText: {
+    color: "#374151",
+  },
+
+  darkText: {
+    color: "#D1D5DB",
+  },
+});

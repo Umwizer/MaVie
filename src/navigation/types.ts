@@ -1,10 +1,11 @@
 export type RootStackParamList = {
   Splash: undefined;
   Welcome: undefined;
-  Onboarding: undefined;
+  OnboardingSlides: undefined;
   OnboardingReady: undefined;
 
   Gender: undefined;
+  WelcomeBoard: undefined;
 
   BirthDate:
     | undefined
@@ -36,7 +37,7 @@ export type RootStackParamList = {
 
   HealthGoals: undefined;
 
-  ProfileSetup: undefined;
+  ProfileSetupScreen: undefined;
   ProfileDetails: undefined;
 
   AvatarSelection: undefined;

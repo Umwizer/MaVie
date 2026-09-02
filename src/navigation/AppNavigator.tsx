@@ -1,40 +1,45 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
 
 import { NavigationContainer } from "@react-navigation/native";
-import {
-  createNativeStackNavigator,
-} from "@react-navigation/native-stack";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import { AuthProvider } from "../context/AuthContext";
 
+// Splash
 import SplashScreen from "../SplashScreen/SplashScreen";
+import WelcomeBoard from "../screens/onbording/Welcome";
+
+// Onboarding
 import WelcomeScreen from "../screens/onbording/WelcomeScreen";
-
-import LoginScreen from "../screens/auth/LoginScreen";
-import SignupScreen from "../screens/auth/SignUpScreen";
-
 import OnboardingReadyScreen from "../screens/onbording/OnboardingReadyScreen";
 import GenderScreen from "../screens/onbording/GenderScreen";
 import BirthDateScreen from "../screens/onbording/BirthDateScreen";
 import PersonalInfoScreen from "../screens/onbording/PersonalInfoScreen";
 import HealthGoalsScreen from "../screens/onbording/HealthGoalsScreen";
-import OnboardingScreen from "../screens/onbording/OnboardingScreen";
 
+// Authentication
+import LoginScreen from "../screens/auth/LoginScreen";
+import SignupScreen from "../screens/auth/SignUpScreen";
+
+// Profile
 import ProfileSetupScreen from "../screens/profile/ProfileSetupScreen";
 import ProfileDetailsScreen from "../screens/profile/ProfileDetailsScreen";
 import AvatarSelectionScreen from "../screens/profile/AvatarSelectionScreen";
 import ChooseAvatarScreen from "../screens/profile/ChooseAvatarScreen";
 
+// Home
 import HomeScreen from "../screens/home/HomeScreen";
 
+// Navigation types
 import type { RootStackParamList } from "./types";
+import OnboardingScreen from "../screens/onbording/OnboardingScreen";
 
-const Stack =
-  createNativeStackNavigator<RootStackParamList>();
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
 
 function RootNavigator() {
   return (
@@ -44,21 +49,33 @@ function RootNavigator() {
         screenOptions={{
           headerShown: false,
           animation: "slide_from_right",
+          contentStyle: {
+            backgroundColor: "#000000",
+          },
         }}
       >
+        {/* Splash */}
+
         <Stack.Screen
           name="Splash"
           component={SplashScreen}
         />
-         <Stack.Screen
-          name="OnboardingScreen"
-          component={OnboardingScreen}
-        />
+
+        {/* Welcome */}
 
         <Stack.Screen
           name="Welcome"
           component={WelcomeScreen}
         />
+
+        {/* Onboarding Ready */}
+
+        <Stack.Screen
+          name="OnboardingReady"
+          component={OnboardingReadyScreen}
+        />
+
+        {/* Authentication */}
 
         <Stack.Screen
           name="Login"
@@ -69,11 +86,12 @@ function RootNavigator() {
           name="signUp"
           component={SignupScreen}
         />
-
         <Stack.Screen
-          name="OnboardingReady"
-          component={OnboardingReadyScreen}
+        name="ProfileSetupScreen"
+          component={ProfileSetupScreen}
         />
+
+        {/* Onboarding Steps */}
 
         <Stack.Screen
           name="Gender"
@@ -94,15 +112,19 @@ function RootNavigator() {
           name="HealthGoals"
           component={HealthGoalsScreen}
         />
+
+        {/* Profile Setup */}
+
         <Stack.Screen
-          name="ProfileSetup"
-          component={ProfileSetupScreen}
+          name="OnboardingSlides"
+          component={OnboardingScreen}
         />
 
         <Stack.Screen
           name="ProfileDetails"
           component={ProfileDetailsScreen}
         />
+        <Stack.Screen name="WelcomeBoard" component={WelcomeBoard} />
 
         <Stack.Screen
           name="AvatarSelection"
@@ -114,31 +136,27 @@ function RootNavigator() {
           component={ChooseAvatarScreen}
         />
 
+        {/* Home */}
+
         <Stack.Screen
           name="Home"
           component={HomeScreen}
         />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
+
 export default function AppNavigator() {
   return (
-    <AuthProvider>
-      <SafeAreaProvider>
-        <View style={styles.container}>
-          <StatusBar style="light" />
-          <RootNavigator />
-        </View>
-      </SafeAreaProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <StatusBar style="light" />
+
+        <RootNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
-});

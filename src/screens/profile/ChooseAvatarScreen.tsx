@@ -41,7 +41,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container}>
       <Pressable
         style={styles.skipButton}
-        onPress={() => navigation.navigate("Onboarding")}
+        onPress={() => navigation.navigate("#")}
       >
         <Text style={styles.skipText}>Skip</Text>
       </Pressable>
@@ -107,7 +107,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
       <View style={styles.footer}>
         <Pressable
           style={styles.continueButton}
-          onPress={() => navigation.navigate("Onboarding")}
+          onPress={() => navigation.navigate("OnboardingSlides")}
         >
           <View style={styles.buttonContent}>
             <Text style={styles.continueText}>Continue</Text>

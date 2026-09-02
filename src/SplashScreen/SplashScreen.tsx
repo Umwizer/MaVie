@@ -1,5 +1,7 @@
+import React from "react";
+
 import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "expo-status-bar";
+
 import {
   ImageBackground,
   Pressable,
@@ -7,40 +9,42 @@ import {
   Text,
   View,
 } from "react-native";
+
+import { StatusBar } from "expo-status-bar";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "../services/firebase";
+
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import type { RootStackParamList } from "../navigation/types";
 
+
 const HERO_IMAGE = require("../../assets/welcome-hero.jpg");
+
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "Splash"
 >;
 
-export default function SplashScreen() {
-  const navigation = useNavigation<SplashScreenNavigationProp>();
-  const insets = useSafeAreaInsets();
-  const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsub();
-  }, []);
+export default function SplashScreen() {
+  const navigation =
+    useNavigation<SplashScreenNavigationProp>();
+
+  const insets = useSafeAreaInsets();
+
 
   const handleGetStarted = () => {
-    // If user is already authenticated, go to OnboardingReady
-    // Otherwise, go to Welcome for login/signup
-  
-      navigation.navigate("OnboardingScreen");};
+    navigation.navigate("WelcomeBoard");
+  };
+
+
   return (
     <View style={styles.container}>
+
       <StatusBar style="light" />
 
       <ImageBackground
@@ -48,93 +52,223 @@ export default function SplashScreen() {
         resizeMode="cover"
         style={styles.background}
       >
+
+        {/* DARK GRADIENT */}
+
         <LinearGradient
           colors={[
-            "transparent",
-            "rgba(0,0,0,0.55)",
-            "rgba(0,0,0,0.85)",
+            "rgba(0,0,0,0)",
+            "rgba(0,0,0,0.45)",
+            "rgba(0,0,0,0.92)",
           ]}
-          locations={[0, 0.55, 1]}
-          style={StyleSheet.absoluteFill}
+          locations={[0, 0.5, 1]}
+          style={styles.gradient}
+          pointerEvents="none"
         />
+
+
+        {/* CONTENT ABOVE GRADIENT */}
 
         <View
           style={[
             styles.content,
             {
+              paddingTop: insets.top + 20,
               paddingBottom: insets.bottom + 24,
             },
           ]}
         >
-          <Text style={styles.title}>
-            Wellness Starts Here.
-          </Text>
 
-          <Text style={styles.description}>
-            Track appointments, meds, meals and habits — all in one place.
-          </Text>
+          <View style={styles.bottomContent}>
 
-          <Pressable
-            onPress={handleGetStarted}
-            style={({ pressed }) => [
-              styles.button,
-              pressed && styles.buttonPressed,
-            ]}
-          >
-            <Text style={styles.buttonText}>
-              Get Started
+            {/* TITLE */}
+
+            <Text style={styles.title}>
+              Wellness Starts Here.
             </Text>
-          </Pressable>
+
+
+            {/* DESCRIPTION */}
+
+            <Text style={styles.description}>
+              Track appointments, meds, meals and habits — all in one place.
+            </Text>
+
+
+            {/* GET STARTED BUTTON */}
+
+            <Pressable
+              onPress={handleGetStarted}
+              style={({ pressed }) => [
+                styles.button,
+                pressed && styles.buttonPressed,
+              ]}
+            >
+              <Text style={styles.buttonText}>
+                Get Started
+              </Text>
+            </Pressable>
+
+          </View>
+
         </View>
+
       </ImageBackground>
+
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
+
+  // =========================
+  // MAIN CONTAINER
+  // =========================
+
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: "#000000",
   },
+
+
+  // =========================
+  // BACKGROUND IMAGE
+  // =========================
 
   background: {
     flex: 1,
-    justifyContent: "flex-end",
+    width: "100%",
+    height: "100%",
   },
+
+
+  // =========================
+  // GRADIENT
+  // =========================
+
+  gradient: {
+    ...StyleSheet.absoluteFillObject,
+
+    zIndex: 1,
+  },
+
+
+  // =========================
+  // MAIN CONTENT
+  // =========================
 
   content: {
+    flex: 1,
+
+    justifyContent: "flex-end",
+
     paddingHorizontal: 24,
-    gap: 8,
+
+    // Content MUST be above gradient
+    zIndex: 2,
   },
+
+
+  bottomContent: {
+    width: "100%",
+  },
+
+
+  // =========================
+  // TITLE
+  // =========================
 
   title: {
-    fontSize: 36,
-    lineHeight: 43,
-    fontWeight: "600",
     color: "#FFFFFF",
+
+    fontSize: 36,
+
+    lineHeight: 43,
+
+    fontWeight: "700",
+
+    marginBottom: 10,
   },
+
+
+  // =========================
+  // DESCRIPTION
+  // =========================
 
   description: {
-    marginBottom: 20,
+    color: "rgba(255,255,255,0.90)",
+
     fontSize: 16,
-    lineHeight: 22,
-    color: "rgba(255,255,255,0.85)",
+
+    lineHeight: 23,
+
+    marginBottom: 24,
   },
+
+
+  // =========================
+  // GET STARTED BUTTON
+  // =========================
 
   button: {
-    alignItems: "center",
-    borderRadius: 999,
+    width: "100%",
+
+    height: 58,
+
     backgroundColor: "#FFFFFF",
-    paddingVertical: 16,
+
+    borderRadius: 30,
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    // Ensure visibility
+    zIndex: 10,
+
+    // Android
+    elevation: 10,
+
+    // iOS
+    shadowColor: "#000000",
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    shadowOpacity: 0.3,
+
+    shadowRadius: 8,
   },
+
+
+  // =========================
+  // PRESSED BUTTON
+  // =========================
 
   buttonPressed: {
-    opacity: 0.85,
+    backgroundColor: "#F2F2F2",
+
+    transform: [
+      {
+        scale: 0.98,
+      },
+    ],
   },
 
+
+  // =========================
+  // BUTTON TEXT
+  // =========================
+
   buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
     color: "#171717",
+
+    fontSize: 16,
+
+    fontWeight: "700",
   },
+
 });

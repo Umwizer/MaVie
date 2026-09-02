@@ -4,10 +4,11 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import MapView, {
   Marker,
   MapPressEvent,
-  Region,
 } from "react-native-maps";
+
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import {
   Image,
   Pressable,
@@ -16,7 +17,9 @@ import {
   Text,
   TextInput,
   View,
+  ActivityIndicator,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
@@ -38,62 +41,10 @@ type Coordinates = {
   longitude: number;
 };
 
-/* ============================================================
-   DATA
-============================================================ */
-
-const countries: Country[] = [
-  {
-    name: "Rwanda",
-    flag: "🇷🇼",
-    code: "+250",
-  },
-  {
-    name: "Uganda",
-    flag: "🇺🇬",
-    code: "+256",
-  },
-  {
-    name: "Kenya",
-    flag: "🇰🇪",
-    code: "+254",
-  },
-  {
-    name: "Tanzania",
-    flag: "🇹🇿",
-    code: "+255",
-  },
-  {
-    name: "Burundi",
-    flag: "🇧🇮",
-    code: "+257",
-  },
-  {
-    name: "South Africa",
-    flag: "🇿🇦",
-    code: "+27",
-  },
-  {
-    name: "United States",
-    flag: "🇺🇸",
-    code: "+1",
-  },
-  {
-    name: "United Kingdom",
-    flag: "🇬🇧",
-    code: "+44",
-  },
-  {
-    name: "Canada",
-    flag: "🇨🇦",
-    code: "+1",
-  },
-  {
-    name: "India",
-    flag: "🇮🇳",
-    code: "+91",
-  },
-];
+const DEFAULT_LOCATION: Coordinates = {
+  latitude: -1.9441,
+  longitude: 30.0619,
+};
 
 const genders = [
   "Female",
@@ -140,46 +91,50 @@ const insuranceProviders = [
   "Britam Insurance Rwanda",
 ];
 
-/* Kigali */
-const DEFAULT_LOCATION: Coordinates = {
-  latitude: -1.9441,
-  longitude: 30.0619,
-};
-
-/* ============================================================
-   SCREEN
-============================================================ */
-
 export default function ProfileDetailsScreen({
   navigation,
 }: Props) {
-  /* ---------------- Account ---------------- */
 
   const [gender, setGender] = useState("Female");
 
   const [dateOfBirth, setDateOfBirth] = useState(
-    new Date(2000, 0, 9),
+    new Date(2000, 0, 9)
   );
 
   const [showDatePicker, setShowDatePicker] =
     useState(false);
 
-  /* ---------------- Location ---------------- */
+  const [countries, setCountries] = useState<
+    Country[]
+  >([]);
 
-  const [country, setCountry] = useState<Country>(
-    countries[0],
-  );
+  const [country, setCountry] =
+    useState<Country | null>(null);
 
-  const [city, setCity] = useState("Kigali");
+  const [cities, setCities] = useState<string[]>([]);
+
+  const [city, setCity] = useState("");
 
   const [phone, setPhone] = useState("");
+
+  const [loadingCountries, setLoadingCountries] =
+    useState(true);
+
+  const [loadingCities, setLoadingCities] =
+    useState(false);
+
+  const [countrySearch, setCountrySearch] =
+    useState("");
+
+  const [citySearch, setCitySearch] =
+    useState("");
+
 
   const [coordinates, setCoordinates] =
     useState<Coordinates>(DEFAULT_LOCATION);
 
   const [showMap, setShowMap] = useState(false);
 
-  /* ---------------- Personal info ---------------- */
 
   const [bloodType, setBloodType] = useState("O+");
 
@@ -195,17 +150,13 @@ export default function ProfileDetailsScreen({
 
   const [notes, setNotes] = useState("");
 
-  /* ---------------- Pickers ---------------- */
 
   const [openPicker, setOpenPicker] =
     useState<string | null>(null);
 
-  /* ---------------- Profile image ---------------- */
 
   const [profileImage, setProfileImage] =
     useState("");
-
-  /* ---------------- Insurance ---------------- */
 
   const [insuranceProvider, setInsuranceProvider] =
     useState("");
@@ -213,63 +164,207 @@ export default function ProfileDetailsScreen({
   const [insuranceCard, setInsuranceCard] =
     useState("");
 
-  /* ============================================================
-     PROFILE IMAGE
-  ============================================================ */
 
-  const chooseImage = async () => {
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  const fetchCountries = async () => {
     try {
-      const result =
-        await DocumentPicker.getDocumentAsync({
-          type: ["image/jpeg", "image/png"],
-          copyToCacheDirectory: true,
-          multiple: false,
-        });
+      setLoadingCountries(true);
 
-      if (!result.canceled) {
-        setProfileImage(result.assets[0].uri);
+      const response = await fetch(
+        "https://restcountries.com/v3.1/all?fields=name,flag,idd"
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Unable to fetch countries"
+        );
+      }
+
+      const data = await response.json();
+
+      const formattedCountries: Country[] = data
+        .map((item: any) => {
+          let callingCode = "";
+
+          if (
+            item.idd?.root &&
+            item.idd?.suffixes &&
+            item.idd.suffixes.length > 0
+          ) {
+            callingCode =
+              item.idd.root +
+              item.idd.suffixes[0];
+          } else if (item.idd?.root) {
+            callingCode = item.idd.root;
+          }
+
+          return {
+            name: item.name?.common || "",
+            flag: item.flag || "🌍",
+            code: callingCode,
+          };
+        })
+        .filter(
+          (item: Country) =>
+            item.name.length > 0
+        )
+        .sort((a: Country, b: Country) =>
+          a.name.localeCompare(b.name)
+        );
+
+      setCountries(formattedCountries);
+
+      /* Default Rwanda */
+
+      const rwanda =
+        formattedCountries.find(
+          (item) => item.name === "Rwanda"
+        );
+
+      if (rwanda) {
+        setCountry(rwanda);
+      } else if (
+        formattedCountries.length > 0
+      ) {
+        setCountry(formattedCountries[0]);
       }
     } catch (error) {
       console.warn(
-        "Unable to select profile image:",
-        error,
+        "Error fetching countries:",
+        error
       );
+    } finally {
+      setLoadingCountries(false);
     }
   };
 
-  /* ============================================================
-     INSURANCE CARD
-  ============================================================ */
 
-  const chooseInsuranceCard = async () => {
+  useEffect(() => {
+    if (country?.name) {
+      fetchCities(country.name);
+    }
+  }, [country?.name]);
+
+  const fetchCities = async (
+    countryName: string
+  ) => {
+    try {
+      setLoadingCities(true);
+
+      setCities([]);
+      setCity("");
+
+      const response = await fetch(
+        "https://countriesnow.space/api/v0.1/countries/cities",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            country: countryName,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Unable to fetch cities"
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !data.error &&
+        Array.isArray(data.data)
+      ) {
+        const sortedCities = data.data.sort(
+          (a: string, b: string) =>
+            a.localeCompare(b)
+        );
+
+        setCities(sortedCities);
+
+        if (sortedCities.length > 0) {
+          setCity(sortedCities[0]);
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "Error fetching cities:",
+        error
+      );
+
+      setCities([]);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+
+  const chooseImage = async () => {
     try {
       const result =
         await DocumentPicker.getDocumentAsync({
           type: [
             "image/jpeg",
             "image/png",
-            "application/pdf",
           ],
           copyToCacheDirectory: true,
           multiple: false,
         });
 
       if (!result.canceled) {
-        setInsuranceCard(result.assets[0].name);
+        setProfileImage(
+          result.assets[0].uri
+        );
       }
     } catch (error) {
       console.warn(
-        "Unable to select insurance card:",
-        error,
+        "Unable to select image:",
+        error
       );
     }
   };
 
-  /* ============================================================
-     ALLERGIES
-  ============================================================ */
 
-  const toggleAllergy = (value: string) => {
+  const chooseInsuranceCard =
+    async () => {
+      try {
+        const result =
+          await DocumentPicker.getDocumentAsync({
+            type: [
+              "image/jpeg",
+              "image/png",
+              "application/pdf",
+            ],
+            copyToCacheDirectory: true,
+            multiple: false,
+          });
+
+        if (!result.canceled) {
+          setInsuranceCard(
+            result.assets[0].name
+          );
+        }
+      } catch (error) {
+        console.warn(
+          "Unable to select insurance card:",
+          error
+        );
+      }
+    };
+
+  const toggleAllergy = (
+    value: string
+  ) => {
     setSelectedAllergies((current) => {
       if (value === "None") {
         return current.includes("None")
@@ -279,25 +374,22 @@ export default function ProfileDetailsScreen({
 
       if (current.includes(value)) {
         return current.filter(
-          (item) => item !== value,
+          (item) => item !== value
         );
       }
 
       return [
         ...current.filter(
-          (item) => item !== "None",
+          (item) => item !== "None"
         ),
         value,
       ];
     });
   };
 
-  /* ============================================================
-     MAP LOCATION
-  ============================================================ */
 
-  const handleMapPress = async (
-    event: MapPressEvent,
+  const handleMapPress = (
+    event: MapPressEvent
   ) => {
     const {
       latitude,
@@ -308,88 +400,27 @@ export default function ProfileDetailsScreen({
       latitude,
       longitude,
     });
-
-    /*
-     * Reverse geocoding converts coordinates
-     * into country/city names.
-     *
-     * Example:
-     *
-     * -1.9441, 30.0619
-     *       ↓
-     * Kigali, Rwanda
-     */
-
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
-        {
-          headers: {
-            Accept: "application/json",
-            "User-Agent":
-              "HealthApp/1.0",
-          },
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          "Reverse geocoding failed",
-        );
-      }
-
-      const data = await response.json();
-
-      const address = data?.address;
-
-      const detectedCountry =
-        address?.country ?? "";
-
-      const detectedCity =
-        address?.city ??
-        address?.town ??
-        address?.village ??
-        address?.municipality ??
-        address?.county ??
-        "";
-
-      /* Country */
-
-      if (detectedCountry) {
-        const matchingCountry =
-          countries.find(
-            (item) =>
-              item.name.toLowerCase() ===
-              detectedCountry.toLowerCase(),
-          );
-
-        if (matchingCountry) {
-          setCountry(matchingCountry);
-        } else {
-          setCountry({
-            name: detectedCountry,
-            flag: "🌍",
-            code: "",
-          });
-        }
-      }
-
-      /* City */
-
-      if (detectedCity) {
-        setCity(detectedCity);
-      }
-    } catch (error) {
-      console.warn(
-        "Could not determine city/country:",
-        error,
-      );
-    }
   };
 
-  /* ============================================================
-     RENDER
-  ============================================================ */
+
+  const filteredCountries =
+    countries.filter((item) =>
+      item.name
+        .toLowerCase()
+        .includes(
+          countrySearch.toLowerCase()
+        )
+    );
+
+  const filteredCities =
+    cities.filter((item) =>
+      item
+        .toLowerCase()
+        .includes(
+          citySearch.toLowerCase()
+        )
+    );
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -400,9 +431,6 @@ export default function ProfileDetailsScreen({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ======================================================
-            HEADER
-        ====================================================== */}
 
         <View style={styles.header}>
           <View style={styles.avatarWrapper}>
@@ -446,9 +474,6 @@ export default function ProfileDetailsScreen({
           </Text>
         </View>
 
-        {/* ======================================================
-            ACCOUNT
-        ====================================================== */}
 
         <SectionTitle
           label="Account"
@@ -490,21 +515,21 @@ export default function ProfileDetailsScreen({
             value={dateOfBirth}
             mode="date"
             maximumDate={new Date()}
-            onChange={(_, selectedDate) => {
+            onChange={(
+              _,
+              selectedDate
+            ) => {
               setShowDatePicker(false);
 
               if (selectedDate) {
                 setDateOfBirth(
-                  selectedDate,
+                  selectedDate
                 );
               }
             }}
           />
         )}
 
-        {/* ======================================================
-            PERSONAL INFO
-        ====================================================== */}
 
         <SectionTitle
           label="Personal info"
@@ -528,16 +553,19 @@ export default function ProfileDetailsScreen({
               setOpenPicker(
                 openPicker === "country"
                   ? null
-                  : "country",
+                  : "country"
               )
             }
           >
             <Text style={styles.countryFlag}>
-              {country.flag}
+              {country?.flag || "🌍"}
             </Text>
 
             <Text style={styles.pickerValue}>
-              {country.name}
+              {loadingCountries
+                ? "Loading countries..."
+                : country?.name ||
+                  "Select country"}
             </Text>
 
             <Ionicons
@@ -546,39 +574,87 @@ export default function ProfileDetailsScreen({
                   ? "chevron-up"
                   : "chevron-down"
               }
-              size={12}
+              size={16}
               color="#9AA3B2"
             />
           </Pressable>
 
           {openPicker === "country" && (
             <View
-              style={styles.pickerDropdown}
+              style={styles.dropdownContainer}
             >
-              {countries.map((item) => (
-                <Pressable
-                  key={item.name}
-                  style={styles.pickerOption}
-                  onPress={() => {
-                    setCountry(item);
-                    setOpenPicker(null);
-                  }}
-                >
-                  <Text
-                    style={styles.countryFlag}
-                  >
-                    {item.flag}
-                  </Text>
+              <View
+                style={styles.searchContainer}
+              >
+                <Ionicons
+                  name="search-outline"
+                  size={18}
+                  color="#9AA3B2"
+                />
 
+                <TextInput
+                  value={countrySearch}
+                  onChangeText={
+                    setCountrySearch
+                  }
+                  placeholder="Search country..."
+                  placeholderTextColor="#9AA3B2"
+                  style={styles.searchInput}
+                />
+              </View>
+
+              <ScrollView
+                style={styles.dropdownScroll}
+                nestedScrollEnabled
+                keyboardShouldPersistTaps="handled"
+              >
+                {filteredCountries.map(
+                  (item) => (
+                    <Pressable
+                      key={item.name}
+                      style={
+                        styles.pickerOption
+                      }
+                      onPress={() => {
+                        setCountry(item);
+                        setCountrySearch("");
+                        setOpenPicker(null);
+                      }}
+                    >
+                      <Text
+                        style={
+                          styles.countryFlag
+                        }
+                      >
+                        {item.flag}
+                      </Text>
+
+                      <Text
+                        style={
+                          styles.pickerOptionText
+                        }
+                      >
+                        {item.name}
+                      </Text>
+
+                      <Text
+                        style={styles.phoneCode}
+                      >
+                        {item.code}
+                      </Text>
+                    </Pressable>
+                  )
+                )}
+
+                {filteredCountries.length ===
+                  0 && (
                   <Text
-                    style={
-                      styles.pickerOptionText
-                    }
+                    style={styles.emptyText}
                   >
-                    {item.name} ({item.code})
+                    No countries found
                   </Text>
-                </Pressable>
-              ))}
+                )}
+              </ScrollView>
             </View>
           )}
         </View>
@@ -590,40 +666,133 @@ export default function ProfileDetailsScreen({
             City
           </Text>
 
-          <View style={styles.input}>
+          <Pressable
+            style={styles.input}
+            disabled={
+              !country || loadingCities
+            }
+            onPress={() =>
+              setOpenPicker(
+                openPicker === "city"
+                  ? null
+                  : "city"
+              )
+            }
+          >
             <Ionicons
               name="location-outline"
-              size={12}
+              size={16}
               color="#9AA3B2"
             />
 
-            <Text
-              style={styles.pickerValue}
-            >
-              {city || "Select from map"}
+            <Text style={styles.pickerValue}>
+              {loadingCities
+                ? "Loading cities..."
+                : city || "Select city"}
             </Text>
 
             <Ionicons
-              name="map-outline"
-              size={12}
+              name={
+                openPicker === "city"
+                  ? "chevron-up"
+                  : "chevron-down"
+              }
+              size={16}
               color="#9AA3B2"
             />
-          </View>
+          </Pressable>
+
+          {openPicker === "city" && (
+            <View
+              style={styles.dropdownContainer}
+            >
+              <View
+                style={styles.searchContainer}
+              >
+                <Ionicons
+                  name="search-outline"
+                  size={18}
+                  color="#9AA3B2"
+                />
+
+                <TextInput
+                  value={citySearch}
+                  onChangeText={setCitySearch}
+                  placeholder="Search city..."
+                  placeholderTextColor="#9AA3B2"
+                  style={styles.searchInput}
+                />
+              </View>
+
+              <ScrollView
+                style={styles.dropdownScroll}
+                nestedScrollEnabled
+                keyboardShouldPersistTaps="handled"
+              >
+                {filteredCities.map(
+                  (item) => (
+                    <Pressable
+                      key={item}
+                      style={
+                        styles.pickerOption
+                      }
+                      onPress={() => {
+                        setCity(item);
+                        setCitySearch("");
+                        setOpenPicker(null);
+                      }}
+                    >
+                      <Ionicons
+                        name="location-outline"
+                        size={16}
+                        color="#2F80ED"
+                      />
+
+                      <Text
+                        style={[
+                          styles.pickerOptionText,
+                          {
+                            marginLeft: 10,
+                          },
+                        ]}
+                      >
+                        {item}
+                      </Text>
+                    </Pressable>
+                  )
+                )}
+
+                {!loadingCities &&
+                  filteredCities.length ===
+                    0 && (
+                    <Text
+                      style={styles.emptyText}
+                    >
+                      No cities found
+                    </Text>
+                  )}
+              </ScrollView>
+            </View>
+          )}
         </View>
 
-        {/* ======================================================
-            MAP
-        ====================================================== */}
+        {/* MAP */}
 
         <View style={styles.mapSection}>
           <View style={styles.mapHeader}>
-            <View style={styles.mapHeaderText}>
-              <Text style={styles.subTitle}>
+            <View
+              style={styles.mapHeaderText}
+            >
+              <Text
+                style={styles.subTitle}
+              >
                 Location on map
               </Text>
 
               <Text
-                style={styles.mapDescription}
+                style={
+                  styles.mapDescription
+                }
               >
                 Tap anywhere on the map to
                 select your location.
@@ -634,7 +803,7 @@ export default function ProfileDetailsScreen({
               style={styles.mapButton}
               onPress={() =>
                 setShowMap(
-                  (value) => !value,
+                  (value) => !value
                 )
               }
             >
@@ -649,7 +818,9 @@ export default function ProfileDetailsScreen({
               />
 
               <Text
-                style={styles.mapButtonText}
+                style={
+                  styles.mapButtonText
+                }
               >
                 {showMap
                   ? "Hide"
@@ -659,7 +830,9 @@ export default function ProfileDetailsScreen({
           </View>
 
           {showMap && (
-            <View style={styles.mapContainer}>
+            <View
+              style={styles.mapContainer}
+            >
               <MapView
                 style={styles.map}
                 initialRegion={{
@@ -684,7 +857,7 @@ export default function ProfileDetailsScreen({
                     "Selected location"
                   }
                   description={
-                    country.name
+                    country?.name || ""
                   }
                 />
               </MapView>
@@ -699,11 +872,16 @@ export default function ProfileDetailsScreen({
                 />
 
                 <Text
-                  style={styles.mapInfoText}
+                  style={
+                    styles.mapInfoText
+                  }
                   numberOfLines={1}
                 >
-                  {city || "Unknown city"},{" "}
-                  {country.name}
+                  {city ||
+                    "Unknown city"}
+                  {country
+                    ? `, ${country.name}`
+                    : ""}
                 </Text>
               </View>
             </View>
@@ -721,13 +899,13 @@ export default function ProfileDetailsScreen({
             <Text
               style={styles.countryCode}
             >
-              {country.code}
+              {country?.code || "+"}
             </Text>
 
             <TextInput
               value={phone}
               onChangeText={setPhone}
-              placeholder="78 000 0000"
+              placeholder="Enter phone number"
               placeholderTextColor="#9AA3B2"
               keyboardType="phone-pad"
               style={styles.textInput}
@@ -748,9 +926,7 @@ export default function ProfileDetailsScreen({
           onSelect={setBloodType}
         />
 
-        {/* ======================================================
-            ALLERGIES
-        ====================================================== */}
+        {/* ALLERGIES */}
 
         <Text style={styles.subTitle}>
           Allergies
@@ -759,14 +935,11 @@ export default function ProfileDetailsScreen({
         <View style={styles.allergies}>
           {(showAllergies
             ? allergyOptions
-            : allergyOptions.slice(
-                0,
-                3,
-              )
+            : allergyOptions.slice(0, 3)
           ).map((item) => {
             const selected =
               selectedAllergies.includes(
-                item,
+                item
               );
 
             return (
@@ -794,21 +967,19 @@ export default function ProfileDetailsScreen({
             style={styles.allergy}
             onPress={() =>
               setShowAllergies(
-                (value) => !value,
+                (value) => !value
               )
             }
           >
             <Text style={styles.more}>
               {showAllergies
                 ? "Show less"
-                : "12+ more"}
+                : "More"}
             </Text>
           </Pressable>
         </View>
 
-        {/* ======================================================
-            HEIGHT
-        ====================================================== */}
+        {/* HEIGHT */}
 
         <RangeRow
           label="Height"
@@ -819,9 +990,7 @@ export default function ProfileDetailsScreen({
           onChange={setHeight}
         />
 
-        {/* ======================================================
-            WEIGHT
-        ====================================================== */}
+        {/* WEIGHT */}
 
         <RangeRow
           label="Weight"
@@ -832,9 +1001,7 @@ export default function ProfileDetailsScreen({
           onChange={setWeight}
         />
 
-        {/* ======================================================
-            NOTES
-        ====================================================== */}
+        {/* NOTES */}
 
         <Text style={styles.subTitle}>
           Additional notes
@@ -857,23 +1024,17 @@ export default function ProfileDetailsScreen({
           </Text>
         </View>
 
-        {/* ======================================================
-            INSURANCE
-        ====================================================== */}
+        {/* INSURANCE */}
 
         <SectionTitle
           label="Insurance"
           icon="lock-closed-outline"
         />
 
-        {/* INSURANCE PROVIDER */}
-
         <InsuranceProviderField
           value={insuranceProvider}
           onChange={setInsuranceProvider}
         />
-
-        {/* POLICY NUMBER */}
 
         <Field
           label="Policy Number"
@@ -888,24 +1049,28 @@ export default function ProfileDetailsScreen({
         </Text>
 
         <View style={styles.uploadBox}>
-          <Text style={styles.uploadTitle}>
+          <Text
+            style={styles.uploadTitle}
+          >
             Browse your file to upload
           </Text>
 
           <Text
-            style={styles.uploadDescription}
+            style={
+              styles.uploadDescription
+            }
           >
             Supported formats: jpg, png,
-            pdf (max 5MB)
+            pdf
           </Text>
 
           <Pressable
             style={styles.browseButton}
-            onPress={
-              chooseInsuranceCard
-            }
+            onPress={chooseInsuranceCard}
           >
-            <Text style={styles.browseText}>
+            <Text
+              style={styles.browseText}
+            >
               Browse File
             </Text>
           </Pressable>
@@ -920,15 +1085,14 @@ export default function ProfileDetailsScreen({
           ) : null}
         </View>
 
-        {/* ======================================================
-            CONTINUE
-        ====================================================== */}
+        {/* CONTINUE */}
 
         <Pressable
           style={styles.continueButton}
           onPress={() =>
             navigation.navigate(
-              "ProfileSetup",)
+              "ProfileSetupScreen"
+            )
           }
         >
           <Text
@@ -939,7 +1103,7 @@ export default function ProfileDetailsScreen({
 
           <Ionicons
             name="arrow-forward"
-            size={13}
+            size={16}
             color="#FFFFFF"
           />
         </Pressable>
@@ -949,7 +1113,7 @@ export default function ProfileDetailsScreen({
         <View style={styles.security}>
           <Ionicons
             name="lock-closed-outline"
-            size={12}
+            size={14}
             color="#9AA3B2"
           />
 
@@ -965,10 +1129,6 @@ export default function ProfileDetailsScreen({
   );
 }
 
-/* ================================================================
-   SECTION TITLE
-================================================================ */
-
 function SectionTitle({
   label,
   icon,
@@ -980,7 +1140,7 @@ function SectionTitle({
     <View style={styles.sectionTitle}>
       <Ionicons
         name={icon}
-        size={11}
+        size={14}
         color="#9AA3B2"
       />
 
@@ -993,9 +1153,6 @@ function SectionTitle({
   );
 }
 
-/* ================================================================
-   DATE FIELD
-================================================================ */
 
 function DateField({
   value,
@@ -1016,19 +1173,17 @@ function DateField({
       >
         <Ionicons
           name="calendar-outline"
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
 
-        <Text
-          style={styles.pickerValue}
-        >
+        <Text style={styles.pickerValue}>
           {value.toLocaleDateString()}
         </Text>
 
         <Ionicons
           name="calendar-outline"
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
       </Pressable>
@@ -1036,9 +1191,6 @@ function DateField({
   );
 }
 
-/* ================================================================
-   PICKER
-================================================================ */
 
 function PickerField({
   label,
@@ -1057,7 +1209,7 @@ function PickerField({
   pickerKey: string;
   openPicker: string | null;
   setOpenPicker: (
-    key: string | null,
+    key: string | null
   ) => void;
   onSelect: (value: string) => void;
 }) {
@@ -1074,21 +1226,17 @@ function PickerField({
         style={styles.input}
         onPress={() =>
           setOpenPicker(
-            isOpen
-              ? null
-              : pickerKey,
+            isOpen ? null : pickerKey
           )
         }
       >
         <Ionicons
           name={icon}
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
 
-        <Text
-          style={styles.pickerValue}
-        >
+        <Text style={styles.pickerValue}>
           {value ||
             `Select ${label.toLowerCase()}`}
         </Text>
@@ -1099,44 +1247,44 @@ function PickerField({
               ? "chevron-up"
               : "chevron-down"
           }
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
       </Pressable>
 
       {isOpen && (
         <View
-          style={styles.pickerDropdown}
+          style={styles.dropdownContainer}
         >
-          {options.map((option) => (
-            <Pressable
-              key={option}
-              style={
-                styles.pickerOption
-              }
-              onPress={() => {
-                onSelect(option);
-                setOpenPicker(null);
-              }}
-            >
-              <Text
-                style={
-                  styles.pickerOptionText
-                }
+          <ScrollView
+            style={styles.dropdownScroll}
+            nestedScrollEnabled
+          >
+            {options.map((option) => (
+              <Pressable
+                key={option}
+                style={styles.pickerOption}
+                onPress={() => {
+                  onSelect(option);
+                  setOpenPicker(null);
+                }}
               >
-                {option}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  style={
+                    styles.pickerOptionText
+                  }
+                >
+                  {option}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
       )}
     </View>
   );
 }
 
-/* ================================================================
-   INSURANCE PROVIDER
-================================================================ */
 
 function InsuranceProviderField({
   value,
@@ -1154,8 +1302,8 @@ function InsuranceProviderField({
         provider
           .toLowerCase()
           .includes(
-            value.toLowerCase(),
-          ),
+            value.toLowerCase()
+          )
     );
 
   return (
@@ -1167,7 +1315,7 @@ function InsuranceProviderField({
       <View style={styles.input}>
         <Ionicons
           name="briefcase-outline"
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
 
@@ -1186,11 +1334,8 @@ function InsuranceProviderField({
         />
 
         <Pressable
-          hitSlop={8}
           onPress={() =>
-            setOpen(
-              (current) => !current,
-            )
+            setOpen((current) => !current)
           }
         >
           <Ionicons
@@ -1199,7 +1344,7 @@ function InsuranceProviderField({
                 ? "chevron-up"
                 : "chevron-down"
             }
-            size={12}
+            size={16}
             color="#9AA3B2"
           />
         </Pressable>
@@ -1207,35 +1352,38 @@ function InsuranceProviderField({
 
       {open && (
         <View
-          style={styles.pickerDropdown}
+          style={styles.dropdownContainer}
         >
-          {filteredProviders.map(
-            (provider) => (
-              <Pressable
-                key={provider}
-                style={
-                  styles.pickerOption
-                }
-                onPress={() => {
-                  onChange(provider);
-                  setOpen(false);
-                }}
-              >
-                <Text
+          <ScrollView
+            style={styles.dropdownScroll}
+            nestedScrollEnabled
+          >
+            {filteredProviders.map(
+              (provider) => (
+                <Pressable
+                  key={provider}
                   style={
-                    styles.pickerOptionText
+                    styles.pickerOption
                   }
+                  onPress={() => {
+                    onChange(provider);
+                    setOpen(false);
+                  }}
                 >
-                  {provider}
-                </Text>
-              </Pressable>
-            ),
-          )}
+                  <Text
+                    style={
+                      styles.pickerOptionText
+                    }
+                  >
+                    {provider}
+                  </Text>
+                </Pressable>
+              )
+            )}
+          </ScrollView>
 
           <Text
-            style={
-              styles.insuranceHint
-            }
+            style={styles.insuranceHint}
           >
             Can't find yours? Type your
             own insurance company above.
@@ -1246,9 +1394,6 @@ function InsuranceProviderField({
   );
 }
 
-/* ================================================================
-   GENERIC FIELD
-================================================================ */
 
 function Field({
   label,
@@ -1270,12 +1415,12 @@ function Field({
       <View style={styles.input}>
         <Ionicons
           name={icon}
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
 
         <TextInput
-          value={value}
+          defaultValue={value}
           placeholder={placeholder}
           placeholderTextColor="#9AA3B2"
           style={styles.textInput}
@@ -1283,7 +1428,7 @@ function Field({
 
         <Ionicons
           name="create-outline"
-          size={12}
+          size={16}
           color="#9AA3B2"
         />
       </View>
@@ -1291,9 +1436,6 @@ function Field({
   );
 }
 
-/* ================================================================
-   RANGE
-================================================================ */
 
 function RangeRow({
   label,
@@ -1315,63 +1457,58 @@ function RangeRow({
 
   const safeProgress = Math.max(
     0,
-    Math.min(1, progress),
+    Math.min(1, progress)
   );
 
   return (
     <View style={styles.rangeRow}>
-      <View
-        style={styles.rangeHeader}
-      >
-        <Text
-          style={styles.rangeLabel}
-        >
+      <View style={styles.rangeHeader}>
+        <Text style={styles.rangeLabel}>
           {label}
         </Text>
 
-        <Text
-          style={styles.rangeValue}
-        >
+        <Text style={styles.rangeValue}>
           {value} {unit}
         </Text>
       </View>
 
-      <View
+      <Pressable
         style={styles.rangeTrack}
+        onPress={() => {
+          const next =
+            value >= max
+              ? min
+              : value + 1;
+
+          onChange(next);
+        }}
       >
         <View
           style={[
             styles.rangeProgress,
             {
-              width: `${safeProgress * 100}%`,
+              width: `${
+                safeProgress * 100
+              }%`,
             },
           ]}
         />
 
-        <Pressable
+        <View
           style={[
             styles.rangeThumb,
             {
-              left: `${safeProgress * 100}%`,
+              left: `${
+                safeProgress * 100
+              }%`,
             },
           ]}
-          onPress={() => {
-            const next =
-              value >= max
-                ? min
-                : value + 1;
-
-            onChange(next);
-          }}
         />
-      </View>
+      </Pressable>
     </View>
   );
 }
 
-/* ================================================================
-   STYLES
-================================================================ */
 
 const styles = StyleSheet.create({
   container: {
@@ -1382,10 +1519,8 @@ const styles = StyleSheet.create({
 
   content: {
     paddingTop: 16,
-    paddingBottom: 32,
+    paddingBottom: 40,
   },
-
-  /* HEADER */
 
   header: {
     alignItems: "center",
@@ -1418,9 +1553,9 @@ const styles = StyleSheet.create({
   },
 
   avatarImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
   },
 
   uploadButton: {
@@ -1453,22 +1588,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  /* SECTION */
-
   sectionTitle: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
     marginTop: 16,
     marginBottom: 8,
-    paddingBottom: 5,
+    paddingBottom: 7,
     borderBottomWidth: 1,
     borderBottomColor: "#344054",
   },
 
   sectionTitleText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
 
@@ -1480,72 +1613,86 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /* FIELDS */
-
   field: {
     marginBottom: 12,
   },
 
   label: {
-    marginBottom: 3,
+    marginBottom: 5,
     color: "#9AA3B2",
     fontSize: 14,
   },
 
   input: {
-    minHeight: 38,
+    minHeight: 46,
     flexDirection: "row",
     alignItems: "center",
     borderRadius: 8,
     backgroundColor: "#1D2939",
-    paddingHorizontal: 9,
+    paddingHorizontal: 12,
   },
 
   textInput: {
     flex: 1,
-    minHeight: 36,
-    paddingHorizontal: 7,
-    paddingVertical: 5,
+    minHeight: 44,
+    paddingHorizontal: 9,
     color: "#FFFFFF",
     fontSize: 14,
   },
 
   pickerValue: {
     flex: 1,
-    paddingHorizontal: 7,
+    paddingHorizontal: 9,
     color: "#FFFFFF",
     fontSize: 14,
   },
 
   countryCode: {
     marginRight: 8,
-    color: "#FFFFFF",
+    color: "#2F80ED",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
   },
 
   countryFlag: {
     marginRight: 8,
-    fontSize: 16,
+    fontSize: 18,
   },
 
-  /* PICKER */
-
-  pickerDropdown: {
-    marginTop: 4,
+  dropdownContainer: {
+    marginTop: 5,
+    borderRadius: 10,
+    backgroundColor: "#1D2939",
     borderWidth: 1,
     borderColor: "#344054",
-    borderRadius: 8,
-    backgroundColor: "#1D2939",
-    paddingHorizontal: 8,
     overflow: "hidden",
   },
 
-  pickerOption: {
-    minHeight: 38,
+  dropdownScroll: {
+    maxHeight: 280,
+  },
+
+  searchContainer: {
+    height: 46,
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#344054",
+  },
+
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+  pickerOption: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#344054",
   },
@@ -1556,14 +1703,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  insuranceHint: {
-    paddingVertical: 10,
-    color: "#9AA3B2",
-    fontSize: 12,
-    lineHeight: 18,
+  phoneCode: {
+    color: "#2F80ED",
+    fontSize: 13,
+    fontWeight: "700",
   },
 
-  /* MAP */
+  emptyText: {
+    padding: 18,
+    textAlign: "center",
+    color: "#9AA3B2",
+    fontSize: 13,
+  },
+
+  insuranceHint: {
+    padding: 12,
+    color: "#9AA3B2",
+    fontSize: 12,
+  },
 
   mapSection: {
     marginBottom: 12,
@@ -1581,7 +1738,6 @@ const styles = StyleSheet.create({
   },
 
   mapDescription: {
-    marginTop: -3,
     color: "#9AA3B2",
     fontSize: 12,
     lineHeight: 17,
@@ -1593,8 +1749,8 @@ const styles = StyleSheet.create({
     gap: 5,
     borderRadius: 7,
     backgroundColor: "#2F80ED",
-    paddingHorizontal: 9,
-    paddingVertical: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
 
   mapButtonText: {
@@ -1608,7 +1764,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 10,
     overflow: "hidden",
-    position: "relative",
   },
 
   map: {
@@ -1638,8 +1793,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  /* ALLERGIES */
-
   allergies: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1652,8 +1805,8 @@ const styles = StyleSheet.create({
     borderColor: "#344054",
     borderRadius: 6,
     backgroundColor: "#1D2939",
-    paddingHorizontal: 8,
-    paddingVertical: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
 
   allergySelected: {
@@ -1664,23 +1817,20 @@ const styles = StyleSheet.create({
 
   allergyText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 13,
   },
 
   more: {
     color: "#2F80ED",
-    fontSize: 14,
+    fontSize: 13,
   },
 
-  /* RANGE */
-
   rangeRow: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
 
   rangeHeader: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
   },
 
@@ -1697,7 +1847,7 @@ const styles = StyleSheet.create({
 
   rangeTrack: {
     height: 8,
-    marginTop: 9,
+    marginTop: 10,
     borderRadius: 4,
     backgroundColor: "#344054",
     position: "relative",
@@ -1721,19 +1871,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#101828",
   },
 
-  /* NOTES */
-
   notes: {
-    minHeight: 95,
-    marginBottom: 12,
+    minHeight: 100,
+    marginBottom: 14,
     borderRadius: 8,
     backgroundColor: "#1D2939",
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
 
   notesInput: {
-    minHeight: 65,
+    minHeight: 70,
     color: "#FFFFFF",
     fontSize: 14,
     lineHeight: 20,
@@ -1745,15 +1893,13 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
 
-  /* UPLOAD */
-
   uploadBox: {
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 18,
     borderRadius: 8,
     backgroundColor: "#1D2939",
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingVertical: 16,
   },
 
   uploadTitle: {
@@ -1764,18 +1910,18 @@ const styles = StyleSheet.create({
   },
 
   uploadDescription: {
-    marginTop: 3,
+    marginTop: 4,
     color: "#9AA3B2",
     fontSize: 12,
     textAlign: "center",
   },
 
   browseButton: {
-    marginTop: 9,
-    borderRadius: 6,
+    marginTop: 12,
+    borderRadius: 7,
     backgroundColor: "#2F80ED",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
   },
 
   browseText: {
@@ -1786,38 +1932,35 @@ const styles = StyleSheet.create({
 
   selectedFile: {
     maxWidth: "90%",
-    marginTop: 6,
+    marginTop: 10,
     color: "#FFFFFF",
     fontSize: 12,
   },
 
-  /* CONTINUE */
-
   continueButton: {
-    height: 40,
+    height: 48,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    borderRadius: 8,
+    gap: 8,
+    borderRadius: 10,
     backgroundColor: "#2F80ED",
   },
 
   continueText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
 
-  /* SECURITY */
-
   security: {
     alignItems: "center",
-    marginTop: 9,
+    marginTop: 14,
+    marginBottom: 10,
   },
 
   securityText: {
-    marginTop: 4,
+    marginTop: 5,
     color: "#9AA3B2",
     fontSize: 12,
     lineHeight: 17,

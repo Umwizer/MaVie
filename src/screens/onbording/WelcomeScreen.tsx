@@ -119,12 +119,6 @@ const WelcomeScreen = () => {
           <Text style={[styles.readyButtonText, { color: colors.accent }]}>Create Account  →</Text>
         </TouchableOpacity>
 
-        {/* Blue "I need help" Link */}
-        <TouchableOpacity onPress={handleHelp} style={styles.helpButton}>
-          <Text style={[styles.helpText, { color: colors.accent }]}>
-            ⓘ  I need help
-          </Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -215,16 +209,19 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   readyButton: {
-    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '80%',
     borderRadius: 30,
     backgroundColor: '#4A6FFF',
     paddingVertical: 16,
-    alignItems: 'center',
     shadowColor: '#4A6FFF',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
+    gap: 10,
   },
   readyButtonText: {
     color: '#FFFFFF',
