@@ -24,4 +24,5 @@ export type RootStackParamList = {
   MedicalConditionList: undefined;
   MedicalConditionSearch: undefined;
   NextScreen: undefined;
+   Home: undefined;
 };

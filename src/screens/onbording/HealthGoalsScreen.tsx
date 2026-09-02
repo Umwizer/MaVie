@@ -61,6 +61,7 @@ const HealthGoalsScreen = () => {
   const handleContinue = () => {
     if (selectedGoal) {
       console.log('Selected goal:', selectedGoal);
+      // ✅ FIXED NAVIGATION: Goes to BirthDate
       navigation.navigate('BirthDate');
     }
   };

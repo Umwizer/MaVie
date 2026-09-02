@@ -41,6 +41,7 @@ const GenderScreen = () => {
     inputBg: isDarkMode ? '#1E293B' : '#FFFFFF',
   };
 
+  // ✅ FIXED NAVIGATION: Goes to Weight
   const handleNext = () => navigation.navigate('Weight'); 
 
   const GenderOption = ({ label, icon, value }: { label: string, icon: string, value: string }) => {

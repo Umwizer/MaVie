@@ -26,6 +26,7 @@ import MedicalConditionsScreen from '../screens/onbording/MedicalConditionsScree
 import MedicalConditionListScreen from '../screens/onbording/MedicalConditionListScreen';
 import MedicalConditionSearchScreen from '../screens/onbording/MedicalConditionSearchScreen';
 import NextScreen from '../screens/onbording/NextScreen';
+import HomeScreen from '../screens/HomeScreen';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -34,7 +35,7 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Splash" // <-- THIS MUST BE "Splash"
+        initialRouteName="Splash"
         screenOptions={{ headerShown: false, animation: "fade" }}
       >
         <Stack.Screen name="Splash" component={SplashScreen} />
@@ -61,6 +62,7 @@ export default function AppNavigator() {
         <Stack.Screen name="MedicalConditionList" component={MedicalConditionListScreen} />
         <Stack.Screen name="MedicalConditionSearch" component={MedicalConditionSearchScreen} />
         <Stack.Screen name="NextScreen" component={NextScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
