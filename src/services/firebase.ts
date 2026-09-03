@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import {
   initializeAuth,
   getAuth,
+  // @ts-ignore — getReactNativePersistence exists at runtime; firebase's type defs don't export it yet
   getReactNativePersistence,
   type Auth,
 } from "firebase/auth";
@@ -28,4 +29,3 @@ try {
 }
 
 export { app, auth };
-console.log("FIREBASE CONFIG LOADED", process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.slice(0,5))

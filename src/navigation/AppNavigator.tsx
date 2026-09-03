@@ -22,7 +22,7 @@ import GenderScreen from "../screens/onbording/GenderScreen";
 import BirthDateScreen from "../screens/onbording/BirthDateScreen";
 import PersonalInfoScreen from "../screens/onbording/PersonalInfoScreen";
 import HealthGoalsScreen from "../screens/onbording/HealthGoalsScreen";
-import OnboardingScreen from "../screens/onbording/OnboardingScreen";
+import OnboardingScreen from "../screens/onbording/OnboardingReadyScreen";
 
 import ProfileSetupScreen from "../screens/profile/ProfileSetupScreen";
 import ProfileDetailsScreen from "../screens/profile/ProfileDetailsScreen";
@@ -94,10 +94,10 @@ function RootNavigator() {
           name="HealthGoals"
           component={HealthGoalsScreen}
         />
-        <Stack.Screen
-          name="ProfileSetup"
+        {/* <Stack.Screen
+          name={"ProfileSetup" as keyof RootStackParamList}
           component={ProfileSetupScreen}
-        />
+        /> */}
 
         <Stack.Screen
           name="ProfileDetails"
