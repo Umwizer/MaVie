@@ -29,7 +29,3 @@ try {
 }
 
 export { app, auth };
-console.log(
-  "FIREBASE CONFIG LOADED",
-  process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.slice(0, 5),
-);
