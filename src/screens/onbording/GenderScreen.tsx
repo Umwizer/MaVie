@@ -40,7 +40,7 @@ const GenderScreen = () => {
   };
 
   // TEMPORARY: Navigating to "Welcome" to prevent crash. Change to 'ChoosePlan' later
-  const handleNext = () => navigation.navigate('ProfileDetails'); 
+  const handleNext = () => navigation.navigate('BirthDate');
 
   const GenderOption = ({ label, icon, value }: { label: string, icon: string, value: string }) => {
     const isSelected = selectedGender === value;

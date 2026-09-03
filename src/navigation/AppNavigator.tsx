@@ -37,7 +37,28 @@ import HomeScreen from "../screens/home/HomeScreen";
 import type { RootStackParamList } from "./types";
 import OnboardingScreen from "../screens/onbording/OnboardingScreen";
 import SecurityQuestion from "../screens/onbording/SecurityQuestion";
+import PhoneNumberScreen from "../screens/auth/PhoneNumberScreen";
 import OtpVerificationScreen from "../screens/auth/OtpVerficationScreen";
+import ScanIdentificationScreen from "../screens/identity/ScanIdentificationScreen";
+import IdentificationCameraScreen from "../screens/identity/IdentificationCameraScreen";
+import IdentityVerifiedScreen from "../screens/identity/IdentityVerifiedScreen";
+import BiometricSetupScreen from "../screens/identity/BiometricSetupScreen";
+import FaceIDSetupScreen from "../screens/identity/FaceIDSetupScreen";
+import IdentityVerification from "../screens/identity/IdentityVerificationScreen";
+import SecureDataScreen from "../screens/security/SecureDataScreen";
+import PrivacyPolicyScreen from "../screens/security/PrivacyPolicyScreen";
+import EnableNotificationsScreen from "../screens/security/EnableNotificationsScreen";
+import AsklepiosScoreScreen from "../screens/security/AsklepiosScoreScreen";
+import AssessmentResultScreen from "../screens/security/AssessmentResultScreen";
+import RecommendationsScreen from "../screens/security/RecommendationsScreen";
+import PersonalizedRecommendationsScreen from "../screens/security/PersonalizedRecommendationsScreen";
+import PickPlanScreen from "../screens/subscription/PickPlanScreen";
+import AsklepiosPlusScreen from "../screens/subscription/AsklepiosPlusScreen";
+import FreeTrialDetailsScreen from "../screens/subscription/FreeTrialDetailsScreen";
+import ProcessingTrialScreen from "../screens/subscription/ProcessingTrialScreen";
+import TrialStartedScreen from "../screens/subscription/TrialStartedScreen";
+
+
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -88,10 +109,7 @@ function RootNavigator() {
           name="signUp"
           component={SignupScreen}
         />
-        <Stack.Screen
-        name="ProfileSetupScreen"
-          component={ProfileSetupScreen}
-        />
+        <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
 
         {/* Onboarding Steps */}
 
@@ -132,6 +150,7 @@ function RootNavigator() {
           name="AvatarSelection"
           component={AvatarSelectionScreen}
         />
+       
 
         <Stack.Screen
           name="ChooseAvatar"
@@ -148,10 +167,120 @@ function RootNavigator() {
           name="SecurityQuestions"
           component={SecurityQuestion}
         />
+        <Stack.Screen name="PhoneNumberScreen" component={PhoneNumberScreen} />
+
         <Stack.Screen
           name="OtpVerification"
           component={OtpVerificationScreen}
         />
+
+        <Stack.Screen
+  name="ScanIdentification"
+  component={ScanIdentificationScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<Stack.Screen
+  name="IdentificationCamera"
+  component={IdentificationCameraScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<Stack.Screen
+  name="IdentityVerified"
+  component={IdentityVerifiedScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+<Stack.Screen name="IdentityVerification" component={IdentityVerification} options={{ headerShown: false }} />
+
+<Stack.Screen
+  name="BiometricSetup"
+  component={BiometricSetupScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+
+<Stack.Screen
+  name="FaceIDSetup"
+  component={FaceIDSetupScreen}
+  options={{
+    headerShown: false,
+  }}
+/>
+<Stack.Screen
+  name="SecureData"
+  component={SecureDataScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="PrivacyPolicy"
+  component={PrivacyPolicyScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="EnableNotifications"
+  component={EnableNotificationsScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="AsklepiosScore"
+  component={AsklepiosScoreScreen}
+  options={{ headerShown: false }}
+/>
+<Stack.Screen
+  name="AssessmentResult"
+  component={AssessmentResultScreen}
+  options={{ headerShown: false }}
+/>
+<Stack.Screen
+  name="Recommendations"
+  component={RecommendationsScreen}
+  options={{ headerShown: false }}
+/>
+<Stack.Screen
+  name="PersonalizedRecommendations"
+  component={PersonalizedRecommendationsScreen}
+  options={{ headerShown: false }}
+/>
+<Stack.Screen
+  name="PickPlan"
+  component={PickPlanScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="AsklepiosPlus"
+  component={AsklepiosPlusScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="FreeTrialDetails"
+  component={FreeTrialDetailsScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="ProcessingTrial"
+  component={ProcessingTrialScreen}
+  options={{ headerShown: false }}
+/>
+
+<Stack.Screen
+  name="TrialStarted"
+  component={TrialStartedScreen}
+  options={{ headerShown: false }}
+/>
 
       </Stack.Navigator>
     </NavigationContainer>

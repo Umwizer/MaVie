@@ -99,13 +99,11 @@ const HealthGoalsScreen = () => {
   const handleContinue = () => {
     if (!selectedGoal) return;
 
-    navigation.navigate("BirthDate", {
-      selectedGoal,
-    });
+    navigation.navigate("ProfileSetup");
   };
 
   const handleSkip = () => {
-    navigation.navigate("BirthDate");
+    navigation.navigate("ProfileSetup");
   };
 
   return (

@@ -13,7 +13,7 @@ import type { RootStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
-  "ProfileSetupScreen"
+  "ProfileSetup"
 >;
 
 const STEPS = [
@@ -81,8 +81,6 @@ export default function ProfileSetupScreen({
         })}
       </View>
 
-      {/* ================= MAIN CONTENT ================= */}
-
       <View style={styles.content}>
         {/* Icon */}
 
@@ -111,7 +109,6 @@ export default function ProfileSetupScreen({
         </Text>
       </View>
 
-      {/* ================= BUTTONS ================= */}
 
       <View style={styles.footer}>
         {/* I'm Ready */}
@@ -124,7 +121,7 @@ export default function ProfileSetupScreen({
           ]}
           onPress={() =>
             navigation.replace(
-              "ChooseAvatar"
+              "ProfileDetails"
             )
           }
         >

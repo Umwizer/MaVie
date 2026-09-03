@@ -1090,9 +1090,7 @@ export default function ProfileDetailsScreen({
         <Pressable
           style={styles.continueButton}
           onPress={() =>
-            navigation.navigate(
-              "ProfileSetupScreen"
-            )
+            navigation.navigate("ChooseAvatar")
           }
         >
           <Text

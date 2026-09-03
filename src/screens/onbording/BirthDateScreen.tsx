@@ -129,7 +129,7 @@ const BirthDateScreen = () => {
               {isDarkMode ? '☀️' : '🌙'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Gender')}>
+          <TouchableOpacity onPress={() => navigation.navigate('HealthGoals')}>
             <Text style={[styles.skipText, { color: colors.accent }]}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -167,7 +167,7 @@ const BirthDateScreen = () => {
           onPress={() => {
             if (age !== null) {
               console.log('Age:', age);
-              navigation.navigate('Gender');
+              navigation.navigate('HealthGoals');
             }
           }}
         >

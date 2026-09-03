@@ -64,7 +64,7 @@ const PersonalInfoScreen = () => {
     }
     console.log('Name submitted:', trimmedName);
     // Navigate to HealthGoals screen
-    navigation.navigate('HealthGoals');
+    navigation.navigate('Gender');
   };
 
   const isValidName = name.trim().length >= 2;
@@ -87,7 +87,7 @@ const PersonalInfoScreen = () => {
           
           <TouchableOpacity 
             style={styles.skipButton}
-            onPress={() => navigation.navigate('HealthGoals')}
+            onPress={() => navigation.navigate('Gender')}
           >
             <Text style={[styles.skipButtonText, { color: colors.skipText }]}>Skip</Text>
           </TouchableOpacity>

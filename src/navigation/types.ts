@@ -7,11 +7,7 @@ export type RootStackParamList = {
   Gender: undefined;
   WelcomeBoard: undefined;
 
-  BirthDate:
-    | undefined
-    | {
-        selectedGoal?: string;
-      };
+  BirthDate: undefined;
 
   PersonalInfo: undefined;
 
@@ -44,14 +40,39 @@ export type RootStackParamList = {
 
   HealthGoals: undefined;
 
-  ProfileSetupScreen: undefined;
+  ProfileSetup: undefined;
   ProfileDetails: undefined;
+  PhoneNumberScreen: undefined;
 
   AvatarSelection: undefined;
   ChooseAvatar: undefined;
   OnboardingAvatar: undefined;
   OnboardingScreen: undefined;
   SecurityQuestions: undefined;
- 
+    // IDENTIFICATION FLOW
+  ScanIdentification: undefined;
+  IdentificationCamera: undefined;
+  IdentityVerification: undefined;
+  IdentityVerified: undefined;
+  BiometricSetup: undefined;
+  FaceIDSetup: undefined;
+SecureData: undefined;
+PrivacyPolicy: undefined;
+EnableNotifications: undefined;
 
+AsklepiosScore: {
+  score?: number;
+};
+
+AssessmentResult: {
+  score?: number;
+};
+
+Recommendations: undefined;
+PersonalizedRecommendations: undefined;
+PickPlan: undefined;
+AsklepiosPlus: undefined;
+FreeTrialDetails: undefined;
+ProcessingTrial: undefined;
+TrialStarted: undefined;
 };

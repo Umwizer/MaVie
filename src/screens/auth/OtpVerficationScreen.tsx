@@ -88,7 +88,7 @@ export default function OtpVerificationScreen({
       Firebase verification will be added here.
     */
 
-    navigation.navigate("OnboardingReady");
+    navigation.navigate("ScanIdentification");
   };
 
   const resendCode = () => {

@@ -96,10 +96,7 @@ export default function SecurityQuestions({ navigation }: Props) {
   activeOpacity={0.8}
   style={styles.continueButton}
   onPress={() =>
-    navigation.navigate("OtpVerification", {
-      PhoneNumber: "1234567890",
-      verificationId: "abc123",
-    })
+    navigation.navigate("PhoneNumberScreen")
   }
 >
   <Text style={styles.continueText}>Continue</Text>

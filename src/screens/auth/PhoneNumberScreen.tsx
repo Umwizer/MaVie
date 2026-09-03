@@ -18,7 +18,7 @@ import type { RootStackParamList } from "../../navigation/types";
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
-  "PhoneNumber"
+  "PhoneNumberScreen"
 >;
 
 export default function PhoneNumberScreen({
