@@ -1,11 +1,27 @@
+// src/screens/onbording/NextScreen.tsx
+
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import type { RootStackParamList } from '../../navigation/types';
+
+type NextScreenRouteProp = RouteProp<RootStackParamList, 'NextScreen'>;
 
 const NextScreen = () => {
+  const route = useRoute<NextScreenRouteProp>();
+  const photoUri = route.params?.photoUri;
+
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.text}>Onboarding Complete!</Text>
+      {photoUri ? (
+        <>
+          <Text style={styles.title}>Scan Complete!</Text>
+          <Image source={{ uri: photoUri }} style={styles.previewImage} />
+        </>
+      ) : (
+        <Text style={styles.title}>Onboarding Complete!</Text>
+      )}
     </SafeAreaView>
   );
 };
@@ -17,10 +33,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#0B1220',
   },
-  text: {
+  title: {
     color: '#FFFFFF',
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  previewImage: {
+    width: 300,
+    height: 400,
+    borderRadius: 16,
   },
 });
 

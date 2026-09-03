@@ -1,9 +1,10 @@
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 export type RootStackParamList = {
   Splash: undefined;
   Welcome: undefined;
   OnboardingReady: undefined;
   PersonalInfo: undefined;
-  Onboarding: undefined;
   HealthGoals: undefined;
   BirthDate: undefined;
   Gender: undefined;
@@ -23,6 +24,14 @@ export type RootStackParamList = {
   MedicalConditions: undefined;
   MedicalConditionList: undefined;
   MedicalConditionSearch: undefined;
-  NextScreen: undefined;
-   Home: undefined;
+  CheckupFrequency: undefined;
+  BodyAnalysis: undefined;
+  BodyScan: undefined;
+  ScanResults: { photoUri?: string } | undefined;
+  AdditionalNotes: undefined;
+  VoiceAIAnalysis: undefined;
+  VoiceRecording: undefined;
+  VoiceRecordingResults: { audioUri?: string } | undefined;
+  NextScreen: { photoUri?: string } | undefined;
+  Home: undefined;
 };

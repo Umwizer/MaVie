@@ -1,3 +1,5 @@
+// src/screens/onbording/WeightScreen.tsx
+
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -12,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RootStackParamList } from '../../navigation/types';
 
 type WeightScreenNavigationProp = NativeStackNavigationProp<
@@ -28,11 +31,26 @@ const WeightScreen = () => {
   const [isDarkMode, setIsDarkMode] = useState(colorScheme === 'dark');
 
   const [unit, setUnit] = useState<'lbs' | 'kg'>('lbs');
-  const [weight, setWeight] = useState(140);
-  const [selectedIndex, setSelectedIndex] = useState(60);
+  const [weight, setWeight] = useState(150);
+  const [selectedIndex, setSelectedIndex] = useState(145);
 
-  const values = Array.from({ length: 171 }, (_, i) => (unit === 'lbs' ? 80 + i : 40 + i));
+  // ✅ FINAL, INCLUSIVE RANGE: 5 lbs to 350 lbs / 2 kg to 160 kg
+  const values = Array.from({ length: 346 }, (_, i) => (unit === 'lbs' ? 5 + i : 2 + i));
   const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const loadWeight = async () => {
+      try {
+        const savedWeight = await AsyncStorage.getItem('userWeight');
+        const savedUnit = await AsyncStorage.getItem('userWeightUnit');
+        if (savedWeight) setWeight(parseInt(savedWeight));
+        if (savedUnit) setUnit(savedUnit as 'lbs' | 'kg');
+      } catch (e) {
+        console.log('Failed to load weight');
+      }
+    };
+    loadWeight();
+  }, []);
 
   useEffect(() => {
     const index = values.indexOf(weight);
@@ -58,12 +76,22 @@ const WeightScreen = () => {
     setWeight(converted);
   };
 
+  const handleContinue = async () => {
+    try {
+      await AsyncStorage.setItem('userWeight', weight.toString());
+      await AsyncStorage.setItem('userWeightUnit', unit);
+      navigation.navigate('Height');
+    } catch (e) {
+      console.log('Failed to save weight');
+    }
+  };
+
   const colors = {
     background: isDarkMode ? '#0B1220' : '#FFFFFF',
     textPrimary: isDarkMode ? '#FFFFFF' : '#1A1A1A',
     textSecondary: isDarkMode ? '#8A94A6' : '#666666',
     textFaded: isDarkMode ? '#2D3748' : '#E2E8F0',
-    accent: '#3B82F6',
+    accent: '#4A6FFF',
     tabBg: isDarkMode ? '#1E293B' : '#F0F0F0',
     tabActiveBg: isDarkMode ? '#334155' : '#FFFFFF',
   };
@@ -72,6 +100,7 @@ const WeightScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={[styles.backButtonText, { color: colors.textPrimary }]}>←</Text>
@@ -80,15 +109,19 @@ const WeightScreen = () => {
           <TouchableOpacity onPress={() => setIsDarkMode(!isDarkMode)} style={styles.themeToggle}>
             <Text style={styles.themeToggleText}>{isDarkMode ? '☀️' : '🌙'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Height')}>
+          <TouchableOpacity onPress={handleContinue}>
             <Text style={[styles.skipText, { color: colors.accent }]}>Skip</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* Main Content */}
       <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>What is your weight?</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          What is your weight?
+        </Text>
 
+        {/* Unit Toggle */}
         <View style={[styles.toggleContainer, { backgroundColor: colors.tabBg }]}>
           <TouchableOpacity 
             style={[styles.toggleBtn, { backgroundColor: unit === 'lbs' ? colors.tabActiveBg : 'transparent' }]}
@@ -104,11 +137,7 @@ const WeightScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.displayContainer}>
-          <Text style={[styles.weightNumber, { color: colors.textPrimary }]}>{weight}</Text>
-          <Text style={[styles.weightUnit, { color: colors.textSecondary }]}>{unit}</Text>
-        </View>
-
+        {/* Carousel */}
         <View style={styles.carouselContainer}>
           <ScrollView
             ref={scrollRef}
@@ -132,14 +161,15 @@ const WeightScreen = () => {
               </View>
             ))}
           </ScrollView>
-          <View style={[styles.centerLine, { backgroundColor: colors.accent }]} />
+          <View style={[styles.centerBox, { borderColor: colors.accent, backgroundColor: colors.accent + '20' }]} />
         </View>
-      </View>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={[styles.continueButton, { backgroundColor: colors.accent }]} onPress={() => navigation.navigate('Height')}>
-          <Text style={styles.continueButtonText}>Continue →</Text>
-        </TouchableOpacity>
+        {/* Footer */}
+        <View style={styles.footer}>
+          <TouchableOpacity style={[styles.continueButton, { backgroundColor: colors.accent }]} onPress={handleContinue}>
+            <Text style={styles.continueButtonText}>Continue →</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -156,16 +186,13 @@ const styles = StyleSheet.create({
   skipText: { fontSize: 16, fontWeight: '600' },
   content: { flex: 1, paddingTop: 30 },
   title: { fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 24 },
-  toggleContainer: { flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 30, width: '70%', alignSelf: 'center' },
+  toggleContainer: { flexDirection: 'row', borderRadius: 12, padding: 4, marginBottom: 40, width: '70%', alignSelf: 'center' },
   toggleBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 10 },
   toggleText: { fontSize: 16, fontWeight: '600' },
-  displayContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 20 },
-  weightNumber: { fontSize: 80, fontWeight: '800', lineHeight: 84 },
-  weightUnit: { fontSize: 20, fontWeight: '500', marginBottom: 14, marginLeft: 4 },
   carouselContainer: { height: 100, justifyContent: 'center' },
   itemContainer: { height: 80, justifyContent: 'center', alignItems: 'center' },
   carouselText: { textAlign: 'center' },
-  centerLine: { position: 'absolute', top: 0, bottom: 0, width: 3, left: '50%', marginLeft: -1.5, backgroundColor: '#3B82F6' },
+  centerBox: { position: 'absolute', top: 0, bottom: 0, width: 100, borderRadius: 16, borderWidth: 2, left: '50%', marginLeft: -50 },
   footer: { paddingBottom: 30, paddingTop: 20 },
   continueButton: { borderRadius: 30, paddingVertical: 16, alignItems: 'center' },
   continueButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '600' },

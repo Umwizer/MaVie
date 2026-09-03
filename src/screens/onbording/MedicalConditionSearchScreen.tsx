@@ -140,7 +140,7 @@ const MedicalConditionSearchScreen = () => {
 
         <TouchableOpacity 
           style={[styles.applyButton, { backgroundColor: colors.accent }]}
-          onPress={() => navigation.navigate('MedicalConditionList')}
+          onPress={() => navigation.navigate('CheckupFrequency')} // <-- CHANGED TO CHECKUP FREQUENCY
         >
           <Text style={styles.applyButtonText}>Apply  ✓</Text>
         </TouchableOpacity>

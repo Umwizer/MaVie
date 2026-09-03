@@ -25,6 +25,12 @@ import AllergyScreen from '../screens/onbording/AllergyScreen';
 import MedicalConditionsScreen from '../screens/onbording/MedicalConditionsScreen';
 import MedicalConditionListScreen from '../screens/onbording/MedicalConditionListScreen';
 import MedicalConditionSearchScreen from '../screens/onbording/MedicalConditionSearchScreen';
+import CheckupFrequencyScreen from '../screens/onbording/CheckupFrequencyScreen';
+import BodyAnalysisScreen from '../screens/onbording/BodyAnalysisScreen';
+import BodyScanScreen from '../screens/onbording/BodyScanScreen';
+import ScanResultsScreen from '../screens/onbording/ScanResultsScreen';
+import AdditionalNotesScreen from '../screens/onbording/AdditionalNotesScreen';
+import VoiceAIAnalysisScreen from '../screens/onbording/VoiceAIAnalysisScreen';
 import NextScreen from '../screens/onbording/NextScreen';
 import HomeScreen from '../screens/HomeScreen';
 import type { RootStackParamList } from './types';
@@ -61,6 +67,12 @@ export default function AppNavigator() {
         <Stack.Screen name="MedicalConditions" component={MedicalConditionsScreen} />
         <Stack.Screen name="MedicalConditionList" component={MedicalConditionListScreen} />
         <Stack.Screen name="MedicalConditionSearch" component={MedicalConditionSearchScreen} />
+        <Stack.Screen name="CheckupFrequency" component={CheckupFrequencyScreen} />
+        <Stack.Screen name="BodyAnalysis" component={BodyAnalysisScreen} />
+        <Stack.Screen name="BodyScan" component={BodyScanScreen} />
+        <Stack.Screen name="ScanResults" component={ScanResultsScreen} />
+        <Stack.Screen name="AdditionalNotes" component={AdditionalNotesScreen} />
+        <Stack.Screen name="VoiceAIAnalysis" component={VoiceAIAnalysisScreen} />
         <Stack.Screen name="NextScreen" component={NextScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
