@@ -95,7 +95,7 @@ function RootNavigator() {
           component={HealthGoalsScreen}
         />
         {/* <Stack.Screen
-          name="ProfileSetup"
+          name={"ProfileSetup" as keyof RootStackParamList}
           component={ProfileSetupScreen}
         /> */}
 
