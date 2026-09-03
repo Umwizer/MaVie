@@ -3,7 +3,7 @@ export type RootStackParamList = {
   Welcome: undefined;
   Onboarding: undefined;
   OnboardingReady: undefined;
-
+  Chat: undefined;
   Gender: undefined;
 
   BirthDate:
