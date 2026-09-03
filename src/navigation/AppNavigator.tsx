@@ -19,6 +19,10 @@ import GenderScreen from "../screens/onbording/GenderScreen";
 import BirthDateScreen from "../screens/onbording/BirthDateScreen";
 import PersonalInfoScreen from "../screens/onbording/PersonalInfoScreen";
 import HealthGoalsScreen from "../screens/onbording/HealthGoalsScreen";
+<<<<<<< HEAD
+=======
+import OnboardingScreen from "../screens/onbording/OnboardingReadyScreen";
+>>>>>>> c4753424df0081b8b54ea2dffcbdf852360ff987
 
 // Authentication
 import LoginScreen from "../screens/auth/LoginScreen";
@@ -132,6 +136,7 @@ function RootNavigator() {
           name="HealthGoals"
           component={HealthGoalsScreen}
         />
+<<<<<<< HEAD
 
         {/* Profile Setup */}
 
@@ -139,6 +144,12 @@ function RootNavigator() {
           name="OnboardingSlides"
           component={OnboardingScreen}
         />
+=======
+        {/* <Stack.Screen
+          name={"ProfileSetup" as keyof RootStackParamList}
+          component={ProfileSetupScreen}
+        /> */}
+>>>>>>> c4753424df0081b8b54ea2dffcbdf852360ff987
 
         <Stack.Screen
           name="ProfileDetails"
