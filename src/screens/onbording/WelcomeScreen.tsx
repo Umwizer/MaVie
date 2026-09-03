@@ -105,7 +105,7 @@ const WelcomeScreen = () => {
         {/* Login and SignUp Buttons */}
         <TouchableOpacity
           style={[styles.readyButton, { backgroundColor: colors.accent }]}
-          onPress={handleLogin}
+          onPress={() => navigation.navigate('Login')}
           activeOpacity={0.8}
         >
           <Text style={styles.readyButtonText}>Sign In  →</Text>
@@ -113,7 +113,7 @@ const WelcomeScreen = () => {
 
         <TouchableOpacity
           style={[styles.readyButton, { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.accent }]}
-          onPress={handleSignUp}
+          onPress={() => navigation.navigate('signUp')}
           activeOpacity={0.8}
         >
           <Text style={[styles.readyButtonText, { color: colors.accent }]}>Create Account  →</Text>

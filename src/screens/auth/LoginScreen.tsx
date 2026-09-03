@@ -1,59 +1,45 @@
-import React, { useEffect, useState } from "react";
-import { View,Text,TextInput,Pressable,StyleSheet,Switch,} from "react-native";
+import { useState } from "react";
+
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Switch,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+
 import { Ionicons } from "@expo/vector-icons";
+
 import { useForm, Controller } from "react-hook-form";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import { GoogleAuthProvider,signInWithCredential,} from "firebase/auth";
-import { auth } from "../../services/firebase";
+
 import { useAuth } from "../../context/AuthContext";
+
 import { colors } from "../../constants/theme";
+
 import type { RootStackParamList } from "../../navigation/types";
-WebBrowser.maybeCompleteAuthSession();
 
+type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
-type Props = NativeStackScreenProps<RootStackParamList,"Login">;
-type FormValues = { email: string; password: string; };
+type FormValues = {
+  email: string;
+  password: string;
+};
 
-
-export default function LoginScreen({
-  navigation,
-}: Props) {
+export default function LoginScreen({ navigation }: Props) {
   const { signIn } = useAuth();
 
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [keepSignedIn, setKeepSignedIn] =
-    useState(true);
-
-  const [authError, setAuthError] =
-    useState<string | null>(null);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
-  const [googleLoading, setGoogleLoading] =
-    useState(false);
-
-  const [
-    request,
-    response,
-    promptAsync,
-  ] = Google.useIdTokenAuthRequest({
-    webClientId:
-      process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-
-    androidClientId:
-      process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-
-    iosClientId:
-      process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-
-    selectAccount: true,
-  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [keepSignedIn, setKeepSignedIn] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const {
     control,
@@ -61,680 +47,518 @@ export default function LoginScreen({
     formState: { errors },
   } = useForm<FormValues>({
     mode: "onBlur",
-
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async ({
-    email,
-    password,
-  }: FormValues) => {
+  const onSubmit = async ({ email, password }: FormValues) => {
     setAuthError(null);
-
     setSubmitting(true);
 
     try {
       await signIn(email, password);
 
       navigation.navigate("OnboardingReady");
-
     } catch (e: any) {
-      setAuthError(
-        e.message || "Unable to sign in."
-      );
-
+      setAuthError(e.message || "Unable to sign in. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    const handleGoogleSignIn = async () => {
-      if (response?.type !== "success") {
-        return;
-      }
-
-      try {
-        setAuthError(null);
-
-        const idToken =
-          response.params?.id_token;
-
-        if (!idToken) {
-          throw new Error(
-            "Google did not return an ID token."
-          );
-        }
-
-
-        // Create Firebase credential
-        const credential =
-          GoogleAuthProvider.credential(idToken);
-
-
-        // Sign into Firebase
-        await signInWithCredential(
-          auth,
-          credential
-        );
-
-
-        // Navigate after successful login
-        navigation.navigate("OnboardingReady");
-
-      } catch (error: any) {
-        console.error(
-          "Google Sign-In Error:",
-          error
-        );
-
-        setAuthError(
-          error.message ||
-            "Google sign-in failed. Please try again."
-        );
-
-      } finally {
-        setGoogleLoading(false);
-      }
-    };
-
-    handleGoogleSignIn();
-
-  }, [response, navigation]);
-
-
-  const handleGoogleLogin = async () => {
-    try {
-      setAuthError(null);
-
-      setGoogleLoading(true);
-
-      const result = await promptAsync();
-
-      // If user cancels
-      if (
-        result.type === "cancel" ||
-        result.type === "dismiss"
-      ) {
-        setGoogleLoading(false);
-      }
-
-    } catch (error: any) {
-      console.error(
-        "Google authentication error:",
-        error
-      );
-
-      setAuthError(
-        error.message ||
-          "Unable to start Google sign-in."
-      );
-
-      setGoogleLoading(false);
-    }
-  };
-
-
   return (
-    <SafeAreaView style={styles.container}>
-
-      {/* ================= HEADER ================= */}
-
-      <View style={styles.header}>
-
-        <View style={styles.logoDot} />
-
-        <Text style={styles.brand}>
-          MaVie
-        </Text>
-
-        <Text style={styles.subtitle}>
-          Sign in to access all-in-one intelligent health
-        </Text>
-
-      </View>
-
-
-      {/* ================= ERROR ================= */}
-
-      {authError && (
-        <View style={styles.errorBanner}>
-
-          <Ionicons
-            name="alert-circle"
-            size={16}
-            color="#FFFFFF"
-          />
-
-          <Text style={styles.errorText}>
-            {authError}
-          </Text>
-
-        </View>
-      )}
-
-
-      {/* ================= EMAIL ================= */}
-
-      <Text style={styles.label}>
-        Email Address
-      </Text>
-
-      <Controller
-        control={control}
-        name="email"
-        rules={{
-          required: "Email is required",
-
-          pattern: {
-            value:
-              /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-
-            message:
-              "Enter a valid email address",
-          },
-        }}
-        render={({
-          field: {
-            onChange,
-            onBlur,
-            value,
-          },
-        }) => (
-          <TextInput
-            style={[
-              styles.input,
-
-              errors.email &&
-                styles.inputError,
-            ]}
-            placeholder="Enter your email address..."
-            placeholderTextColor={
-              colors.textSecondary
-            }
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="email-address"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-          />
-        )}
-      />
-
-      {errors.email && (
-        <Text style={styles.fieldError}>
-          {errors.email.message}
-        </Text>
-      )}
-
-
-      {/* ================= PASSWORD ================= */}
-
-      <Text style={styles.label}>
-        Password
-      </Text>
-
-      <View
-        style={[
-          styles.passwordRow,
-
-          errors.password &&
-            styles.inputError,
-        ]}
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <Controller
-          control={control}
-          name="password"
-          rules={{
-            required: "Password is required",
-          }}
-          render={({
-            field: {
-              onChange,
-              onBlur,
-              value,
-            },
-          }) => (
-            <TextInput
-              style={styles.passwordInput}
-              placeholder="••••••••"
-              placeholderTextColor={
-                colors.textSecondary
-              }
-              secureTextEntry={!showPassword}
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.container}>
+            {/* HEADER */}
+
+            <View style={styles.header}>
+              <View style={styles.logoDot}>
+                <Ionicons
+                  name="heart"
+                  size={20}
+                  color="#FFFFFF"
+                />
+              </View>
+
+              <Text style={styles.brand}>MaVie</Text>
+
+              <Text style={styles.subtitle}>
+                Sign in to access your all-in-one intelligent health experience
+              </Text>
+            </View>
+
+            {/* ERROR */}
+
+            {authError && (
+              <View style={styles.errorBanner}>
+                <Ionicons
+                  name="alert-circle"
+                  size={18}
+                  color="#FFFFFF"
+                />
+
+                <Text style={styles.errorText}>
+                  {authError}
+                </Text>
+              </View>
+            )}
+
+            {/* EMAIL */}
+
+            <Text style={styles.label}>
+              Email Address
+            </Text>
+
+            <Controller
+              control={control}
+              name="email"
+              rules={{
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Enter a valid email address",
+                },
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View
+                  style={[
+                    styles.inputContainer,
+                    errors.email && styles.inputError,
+                  ]}
+                >
+                  <Ionicons
+                    name="mail-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email address"
+                    placeholderTextColor={colors.textSecondary}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                  />
+                </View>
+              )}
             />
-          )}
-        />
 
-        <Pressable
-          onPress={() =>
-            setShowPassword(
-              (current) => !current
-            )
-          }
-        >
-          <Ionicons
-            name={
-              showPassword
-                ? "eye-off"
-                : "eye"
-            }
-            size={20}
-            color={colors.textSecondary}
-          />
-        </Pressable>
+            {errors.email && (
+              <Text style={styles.fieldError}>
+                {errors.email.message}
+              </Text>
+            )}
 
-      </View>
+            {/* PASSWORD */}
 
-      {errors.password && (
-        <Text style={styles.fieldError}>
-          {errors.password.message}
-        </Text>
-      )}
+            <Text style={styles.label}>
+              Password
+            </Text>
 
+            <Controller
+              control={control}
+              name="password"
+              rules={{
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <View
+                  style={[
+                    styles.inputContainer,
+                    errors.password && styles.inputError,
+                  ]}
+                >
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
 
-      {/* ================= REMEMBER + FORGOT ================= */}
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your password"
+                    placeholderTextColor={colors.textSecondary}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={value}
+                    onChangeText={onChange}
+                    onBlur={onBlur}
+                  />
 
-      <View style={styles.row}>
+                  <Pressable
+                    onPress={() =>
+                      setShowPassword((current) => !current)
+                    }
+                    hitSlop={10}
+                  >
+                    <Ionicons
+                      name={
+                        showPassword
+                          ? "eye-off-outline"
+                          : "eye-outline"
+                      }
+                      size={21}
+                      color={colors.textSecondary}
+                    />
+                  </Pressable>
+                </View>
+              )}
+            />
 
-        <View style={styles.rememberRow}>
+            {errors.password && (
+              <Text style={styles.fieldError}>
+                {errors.password.message}
+              </Text>
+            )}
 
-          <Switch
-            value={keepSignedIn}
-            onValueChange={setKeepSignedIn}
-          />
+            {/* REMEMBER / FORGOT PASSWORD */}
 
-          <Text style={styles.rememberText}>
-            Keep me signed in.
-          </Text>
+            <View style={styles.optionsRow}>
+              <View style={styles.rememberRow}>
+                <Switch
+                  value={keepSignedIn}
+                  onValueChange={setKeepSignedIn}
+                  trackColor={{
+                    false: "#767577",
+                    true: colors.primary,
+                  }}
+                  thumbColor="#FFFFFF"
+                />
 
-        </View>
+                <Text style={styles.rememberText}>
+                  Keep me signed in
+                </Text>
+              </View>
 
+              <Pressable
+                onPress={() =>
+                  navigation.navigate("ForgotPasswordMethod")
+                }
+              >
+                <Text style={styles.link}>
+                  Forgot Password?
+                </Text>
+              </Pressable>
+            </View>
 
-        <Pressable
-          onPress={() =>
-            navigation.navigate(
-              "ForgotPasswordMethod"
-            )
-          }
-        >
-          <Text style={styles.link}>
-            Forgot Password
-          </Text>
-        </Pressable>
+            {/* SIGN IN */}
 
-      </View>
+            <Pressable
+              style={[
+                styles.primaryBtn,
+                submitting && styles.primaryBtnDisabled,
+              ]}
+              onPress={handleSubmit(onSubmit)}
+              disabled={submitting}
+            >
+              <Text style={styles.primaryBtnText}>
+                {submitting ? "Signing In..." : "Sign In"}
+              </Text>
 
+              {!submitting && (
+                <Ionicons
+                  name="arrow-forward"
+                  size={18}
+                  color="#FFFFFF"
+                />
+              )}
+            </Pressable>
 
-      {/* ================= SIGN IN BUTTON ================= */}
+            {/* OR */}
 
-      <Pressable
-        style={[
-          styles.primaryBtn,
+            <View style={styles.orContainer}>
+              <View style={styles.line} />
 
-          submitting &&
-            styles.primaryBtnDisabled,
-        ]}
-        onPress={handleSubmit(onSubmit)}
-        disabled={submitting}
-      >
-        <Text style={styles.primaryBtnText}>
-          {submitting
-            ? "Signing In..."
-            : "Sign In →"}
-        </Text>
-      </Pressable>
+              <Text style={styles.orText}>
+                OR
+              </Text>
 
+              <View style={styles.line} />
+            </View>
 
+            {/* GOOGLE - DISABLED TEMPORARILY */}
 
-      <Text style={styles.orText}>
-        or
-      </Text>
+            <Pressable
+              style={[
+                styles.googleBtn,
+                styles.googleBtnDisabled,
+              ]}
+              disabled
+            >
+              <Ionicons
+                name="logo-google"
+                size={20}
+                color={colors.textSecondary}
+              />
 
+              <Text style={styles.googleBtnDisabledText}>
+                Continue with Google
+              </Text>
+            </Pressable>
 
-      <Pressable
-        style={[
-          styles.googleBtn,
+            {/* SIGN UP */}
 
-          googleLoading &&
-            styles.googleBtnDisabled,
+            <View style={styles.footerRow}>
+              <Text style={styles.footerText}>
+                Don't have an account?
+              </Text>
 
-          !request &&
-            styles.googleBtnDisabled,
-        ]}
-        onPress={handleGoogleLogin}
-        disabled={
-          googleLoading || !request
-        }
-      >
-
-        <Ionicons
-          name="logo-google"
-          size={18}
-          color={colors.textPrimary}
-        />
-
-        <Text style={styles.googleBtnText}>
-          {googleLoading
-            ? "Connecting to Google..."
-            : "Continue with Google"}
-        </Text>
-
-      </Pressable>
-
-      <View style={styles.footerRow}>
-
-        <Text style={styles.footerText}>
-          Don't have an account?
-        </Text>
-
-        <Pressable
-          onPress={() =>
-            navigation.navigate("signUp")
-          }
-        >
-          <Text style={styles.link}>
-            Sign Up
-          </Text>
-        </Pressable>
-
-      </View>
-
+              <Pressable
+                onPress={() => navigation.navigate("signUp")}
+              >
+                <Text style={styles.signupLink}>
+                  Sign Up
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
+  keyboardView: {
+    flex: 1,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+  },
 
   container: {
     flex: 1,
-
-    backgroundColor:
-      colors.background,
-
     paddingHorizontal: 24,
-
     paddingTop: 24,
+    paddingBottom: 30,
   },
 
+  /* HEADER */
 
   header: {
     alignItems: "center",
-
-    marginBottom: 24,
+    marginBottom: 30,
   },
-
 
   logoDot: {
-    width: 40,
-    height: 40,
-
-    borderRadius: 12,
-
-    backgroundColor:
-      colors.primary,
-
-    marginBottom: 8,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
   },
-
 
   brand: {
     color: colors.textPrimary,
-
-    fontSize: 20,
-
+    fontSize: 24,
     fontWeight: "700",
   },
 
-
   subtitle: {
     color: colors.textSecondary,
-
-    fontSize: 13,
-
-    marginTop: 4,
-
+    fontSize: 14,
+    marginTop: 8,
     textAlign: "center",
+    lineHeight: 21,
   },
 
+  /* ERROR */
 
   errorBanner: {
     flexDirection: "row",
-
     alignItems: "center",
-
-    gap: 6,
-
-    backgroundColor:
-      colors.error,
-
-    borderRadius: 10,
-
-    padding: 10,
-
-    marginBottom: 16,
+    backgroundColor: colors.error,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 18,
   },
-
 
   errorText: {
-    color: "#FFFFFF",
-
-    fontSize: 13,
-
-    fontWeight: "600",
-
     flex: 1,
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "500",
+    marginLeft: 8,
   },
 
-
+  /* FORM */
 
   label: {
-    color: colors.textSecondary,
-
-    fontSize: 12,
-
-    marginBottom: 6,
-
-    marginTop: 12,
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginTop: 16,
   },
 
+  inputContainer: {
+    height: 54,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.cardBackground,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+  },
 
   input: {
-    backgroundColor:
-      colors.cardBackground,
-
-    borderRadius: 12,
-
-    paddingHorizontal: 14,
-
-    paddingVertical: 12,
-
+    flex: 1,
     color: colors.textPrimary,
-
-    borderWidth: 1,
-
-    borderColor: colors.border,
+    fontSize: 15,
+    marginLeft: 10,
   },
-
 
   inputError: {
-    borderColor:
-      colors.error,
+    borderColor: colors.error,
   },
-
 
   fieldError: {
     color: colors.error,
-
     fontSize: 12,
-
-    marginTop: 4,
+    marginTop: 6,
   },
 
+  /* OPTIONS */
 
-  passwordRow: {
+  optionsRow: {
     flexDirection: "row",
-
+    justifyContent: "space-between",
     alignItems: "center",
-
-    backgroundColor:
-      colors.cardBackground,
-
-    borderRadius: 12,
-
-    paddingHorizontal: 14,
-
-    borderWidth: 1,
-
-    borderColor: colors.border,
+    marginTop: 18,
   },
-
-
-  passwordInput: {
-    flex: 1,
-
-    paddingVertical: 12,
-
-    color: colors.textPrimary,
-  },
-
-
-  row: {
-    flexDirection: "row",
-
-    justifyContent:
-      "space-between",
-
-    alignItems: "center",
-
-    marginTop: 12,
-  },
-
 
   rememberRow: {
     flexDirection: "row",
-
     alignItems: "center",
-
-    gap: 8,
   },
-
 
   rememberText: {
     color: colors.textSecondary,
-
     fontSize: 12,
+    marginLeft: 7,
   },
-
 
   link: {
     color: colors.primary,
-
     fontSize: 12,
-
     fontWeight: "600",
   },
 
+  /* PRIMARY BUTTON */
 
   primaryBtn: {
-    backgroundColor:
-      colors.primary,
-
-    borderRadius: 14,
-
-    paddingVertical: 14,
-
+    height: 54,
+    flexDirection: "row",
     alignItems: "center",
-
-    marginTop: 20,
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 14,
+    marginTop: 26,
+    gap: 8,
   },
-
 
   primaryBtnDisabled: {
     opacity: 0.6,
   },
 
-
   primaryBtnText: {
     color: "#FFFFFF",
-
+    fontSize: 16,
     fontWeight: "700",
-
-    fontSize: 15,
   },
 
+  /* OR */
+
+  orContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 24,
+  },
+
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
 
   orText: {
     color: colors.textSecondary,
-
-    textAlign: "center",
-
-    marginVertical: 12,
-
     fontSize: 12,
+    fontWeight: "600",
+    marginHorizontal: 14,
   },
 
-
+  /* GOOGLE */
 
   googleBtn: {
+    height: 54,
     flexDirection: "row",
-
-    gap: 8,
-
     alignItems: "center",
-
     justifyContent: "center",
-
     borderWidth: 1,
-
     borderColor: colors.border,
-
     borderRadius: 14,
-
-    paddingVertical: 14,
+    gap: 10,
   },
-
 
   googleBtnDisabled: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
 
-
-  googleBtnText: {
-    color: colors.textPrimary,
-
+  googleBtnDisabledText: {
+    color: colors.textSecondary,
+    fontSize: 15,
     fontWeight: "600",
-
-    fontSize: 14,
   },
 
-
+  /* FOOTER */
 
   footerRow: {
     flexDirection: "row",
-
     justifyContent: "center",
-
     alignItems: "center",
-
+    marginTop: 28,
     gap: 5,
-
-    marginTop: 24,
   },
-
 
   footerText: {
     color: colors.textSecondary,
-
-    fontSize: 13,
+    fontSize: 14,
   },
 
+  signupLink: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "700",
+  },
 });

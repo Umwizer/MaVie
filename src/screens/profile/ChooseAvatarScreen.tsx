@@ -107,7 +107,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
       <View style={styles.footer}>
         <Pressable
           style={styles.continueButton}
-          onPress={() => navigation.navigate("OnboardingSlides")}
+          onPress={() => navigation.navigate("SecurityQuestions")}
         >
           <View style={styles.buttonContent}>
             <Text style={styles.continueText}>Continue</Text>

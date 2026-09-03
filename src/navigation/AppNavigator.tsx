@@ -36,6 +36,8 @@ import HomeScreen from "../screens/home/HomeScreen";
 // Navigation types
 import type { RootStackParamList } from "./types";
 import OnboardingScreen from "../screens/onbording/OnboardingScreen";
+import SecurityQuestion from "../screens/onbording/SecurityQuestion";
+import OtpVerificationScreen from "../screens/auth/OtpVerficationScreen";
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -141,6 +143,14 @@ function RootNavigator() {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
+        />
+        <Stack.Screen
+          name="SecurityQuestions"
+          component={SecurityQuestion}
+        />
+        <Stack.Screen
+          name="OtpVerification"
+          component={OtpVerificationScreen}
         />
 
       </Stack.Navigator>

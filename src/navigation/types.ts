@@ -23,6 +23,13 @@ export type RootStackParamList = {
   ForgotPasswordEmail: {
     method: "email" | "sms" | "2fa";
   };
+    PhoneNumber: undefined;
+
+  OtpVerification: {
+    PhoneNumber: string;
+    verificationId: string;
+  };
+
 
   ResetSent: {
     email: string;
@@ -44,4 +51,7 @@ export type RootStackParamList = {
   ChooseAvatar: undefined;
   OnboardingAvatar: undefined;
   OnboardingScreen: undefined;
+  SecurityQuestions: undefined;
+ 
+
 };
