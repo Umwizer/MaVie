@@ -32,14 +32,13 @@ const VoiceAIAnalysisScreen = () => {
 
   // Smooth Waveform animation value
   const waveAnim = useRef(new Animated.Value(0)).current;
-  const waveAnim2 = useRef(new Animated.Value(0)).current; // Second wave for depth
+  const waveAnim2 = useRef(new Animated.Value(0)).current;
 
   const colors = {
     background: isDarkMode ? '#0B1220' : '#FFFFFF',
     textPrimary: isDarkMode ? '#FFFFFF' : '#1A1A1A',
     textSecondary: isDarkMode ? '#8A94A6' : '#666666',
-    accent: '#4A6FFF', // Blue
-    accentFaded: '#4A6FFF',
+    accent: '#4A6FFF',
   };
 
   // Start recording
@@ -57,7 +56,7 @@ const VoiceAIAnalysisScreen = () => {
       setRecording(recording);
       setIsRecording(true);
 
-      // Start smooth waveform animation (Staggered for more organic look)
+      // Start smooth waveform animation
       Animated.loop(
         Animated.timing(waveAnim, {
           toValue: 1,
@@ -80,7 +79,7 @@ const VoiceAIAnalysisScreen = () => {
     }
   };
 
-  // Stop recording
+  // Stop recording and go to HOME
   const stopRecording = async () => {
     setIsRecording(false);
     waveAnim.stopAnimation();
@@ -96,8 +95,8 @@ const VoiceAIAnalysisScreen = () => {
       setRecording(null);
     }
 
-    // Navigate to next screen after stopping
-    navigation.navigate('NextScreen');
+    // ✅ GO STRAIGHT TO HOME
+    navigation.navigate('Home');
   };
 
   return (
@@ -113,7 +112,7 @@ const VoiceAIAnalysisScreen = () => {
           <TouchableOpacity onPress={() => setIsDarkMode(!isDarkMode)} style={styles.themeToggle}>
             <Text style={styles.themeToggleText}>{isDarkMode ? '☀️' : '🌙'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('NextScreen')}>
+          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
             <Text style={[styles.skipText, { color: colors.accent }]}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -132,7 +131,6 @@ const VoiceAIAnalysisScreen = () => {
         <View style={styles.waveformContainer}>
           {isRecording ? (
             <View style={styles.waveform}>
-              {/* First Layer Wave */}
               {[...Array(20)].map((_, index) => {
                 const isBig = index % 2 === 0;
                 const interpolateAnim = waveAnim;

@@ -32,6 +32,5 @@ export type RootStackParamList = {
   VoiceAIAnalysis: undefined;
   VoiceRecording: undefined;
   VoiceRecordingResults: { audioUri?: string } | undefined;
-  NextScreen: { photoUri?: string } | undefined;
   Home: undefined;
 };

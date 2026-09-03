@@ -31,7 +31,6 @@ import BodyScanScreen from '../screens/onbording/BodyScanScreen';
 import ScanResultsScreen from '../screens/onbording/ScanResultsScreen';
 import AdditionalNotesScreen from '../screens/onbording/AdditionalNotesScreen';
 import VoiceAIAnalysisScreen from '../screens/onbording/VoiceAIAnalysisScreen';
-import NextScreen from '../screens/onbording/NextScreen';
 import HomeScreen from '../screens/HomeScreen';
 import type { RootStackParamList } from './types';
 
@@ -73,7 +72,6 @@ export default function AppNavigator() {
         <Stack.Screen name="ScanResults" component={ScanResultsScreen} />
         <Stack.Screen name="AdditionalNotes" component={AdditionalNotesScreen} />
         <Stack.Screen name="VoiceAIAnalysis" component={VoiceAIAnalysisScreen} />
-        <Stack.Screen name="NextScreen" component={NextScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
