@@ -69,7 +69,7 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -334,7 +334,7 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -390,7 +390,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
 
-  /* ERROR */
 
   errorBanner: {
     flexDirection: "row",

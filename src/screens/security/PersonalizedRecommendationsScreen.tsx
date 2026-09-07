@@ -21,7 +21,7 @@ export default function PersonalizedRecommendationsScreen({
   navigation,
 }: Props) {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
@@ -329,7 +329,7 @@ export default function PersonalizedRecommendationsScreen({
           </Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

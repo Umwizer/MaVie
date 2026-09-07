@@ -24,7 +24,7 @@ export default function IdentityVerifiedScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
 
         <View style={styles.iconContainer}>
@@ -63,7 +63,7 @@ export default function IdentityVerifiedScreen({
         </Pressable>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

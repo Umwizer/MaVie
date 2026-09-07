@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { StatusBar } from 'expo-status-bar';
 import type { RootStackParamList } from '../../navigation/types';
 
 type OnboardingReadyScreenNavigationProp = NativeStackNavigationProp<
@@ -26,8 +25,6 @@ const OnboardingReadyScreen = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  const statusBarStyle: 'light' | 'dark' = isDarkMode ? 'light' : 'dark';
-
   const colors = {
     background: isDarkMode ? '#121212' : '#FFFFFF',
     textPrimary: isDarkMode ? '#FFFFFF' : '#1A1A1A',
@@ -39,8 +36,8 @@ const OnboardingReadyScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={statusBarStyle} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* <StatusBar style={statusBarStyle} /> */}
 
       {/* Back Icon and Skip Button with Horizontal Line */}
       <View style={styles.headerButtons}>
@@ -76,8 +73,8 @@ const OnboardingReadyScreen = () => {
         </View>
 
         <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Let's get to know you{'\n'}
-          better
+          Let's fully set up your{'\n'}
+          Mavie Account
         </Text>
 
         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
@@ -94,7 +91,7 @@ const OnboardingReadyScreen = () => {
           <Text style={styles.continueButtonText}>Get Started →</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

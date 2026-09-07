@@ -45,7 +45,7 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
 
-      <StatusBar style="light" />
+      {/* <StatusBar style="light" /> */}
 
       <ImageBackground
         source={HERO_IMAGE}

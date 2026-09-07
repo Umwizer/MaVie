@@ -38,7 +38,7 @@ export default function AssessmentResultScreen({
       : "Your assessment indicates areas that need attention.";
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
@@ -227,7 +227,7 @@ export default function AssessmentResultScreen({
           </Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

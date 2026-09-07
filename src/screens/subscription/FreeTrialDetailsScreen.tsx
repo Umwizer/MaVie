@@ -48,7 +48,7 @@ export default function FreeTrialDetailsScreen({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
@@ -184,7 +184,7 @@ export default function FreeTrialDetailsScreen({
           </Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

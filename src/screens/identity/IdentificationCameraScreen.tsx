@@ -34,19 +34,19 @@ export default function IdentificationCameraScreen({
 
   if (!permission) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.permissionContainer}>
           <Text style={styles.permissionText}>
             Checking camera permission...
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.permissionContainer}>
 
           <View style={styles.permissionIcon}>
@@ -87,7 +87,7 @@ export default function IdentificationCameraScreen({
           </Pressable>
 
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -130,7 +130,7 @@ export default function IdentificationCameraScreen({
 
       <View style={styles.overlay} />
 
-      <SafeAreaView
+      <View
         style={styles.safeArea}
       >
 
@@ -255,7 +255,7 @@ export default function IdentificationCameraScreen({
 
         </View>
 
-      </SafeAreaView>
+      </View>
     </View>
   );
 }

@@ -166,7 +166,7 @@ export default function FaceIDSetupScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
 
         {/* TITLE */}
@@ -287,7 +287,7 @@ export default function FaceIDSetupScreen({
         </Pressable>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

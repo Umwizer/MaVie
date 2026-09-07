@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -104,7 +103,7 @@ export default function BiometricSetupScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
 
         {/* TITLE */}
@@ -173,7 +172,7 @@ export default function BiometricSetupScreen({
         </Pressable>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

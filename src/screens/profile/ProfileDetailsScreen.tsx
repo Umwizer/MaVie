@@ -1,29 +1,40 @@
-import { Feather, Ionicons } from "@expo/vector-icons";
-import * as DocumentPicker from "expo-document-picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import MapView, {
-  Marker,
-  MapPressEvent,
-} from "react-native-maps";
-
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
+  ActivityIndicator,
+  Alert,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ActivityIndicator,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
+import { Feather, Ionicons } from "@expo/vector-icons";
+
+import * as DocumentPicker from "expo-document-picker";
+
+import DateTimePicker from "@react-native-community/datetimepicker";
+
+import MapView, {
+  Marker,
+  MapPressEvent,
+} from "react-native-maps";
+
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+
 import type { RootStackParamList } from "../../navigation/types";
+
+
+/* ============================================================
+   TYPES
+============================================================ */
 
 type Props = NativeStackScreenProps<
   RootStackParamList,
@@ -40,6 +51,11 @@ type Coordinates = {
   latitude: number;
   longitude: number;
 };
+
+
+/* ============================================================
+   CONSTANTS
+============================================================ */
 
 const DEFAULT_LOCATION: Coordinates = {
   latitude: -1.9441,
@@ -91,52 +107,87 @@ const insuranceProviders = [
   "Britam Insurance Rwanda",
 ];
 
+
+/* ============================================================
+   SCREEN
+============================================================ */
+
 export default function ProfileDetailsScreen({
   navigation,
 }: Props) {
 
-  const [gender, setGender] = useState("Female");
+  /* ============================================================
+     ACCOUNT
+  ============================================================ */
 
-  const [dateOfBirth, setDateOfBirth] = useState(
-    new Date(2000, 0, 9)
-  );
+  const [gender, setGender] =
+    useState("Female");
+
+  const [dateOfBirth, setDateOfBirth] =
+    useState(new Date(2000, 0, 9));
 
   const [showDatePicker, setShowDatePicker] =
     useState(false);
 
-  const [countries, setCountries] = useState<
-    Country[]
-  >([]);
+
+  /* ============================================================
+     COUNTRY
+  ============================================================ */
+
+  const [countries, setCountries] =
+    useState<Country[]>([]);
 
   const [country, setCountry] =
     useState<Country | null>(null);
 
-  const [cities, setCities] = useState<string[]>([]);
-
-  const [city, setCity] = useState("");
-
-  const [phone, setPhone] = useState("");
-
   const [loadingCountries, setLoadingCountries] =
     useState(true);
 
-  const [loadingCities, setLoadingCities] =
-    useState(false);
 
-  const [countrySearch, setCountrySearch] =
+  /* ============================================================
+     CITY
+  ============================================================ */
+
+  const [cities, setCities] =
+    useState<string[]>([]);
+
+  const [city, setCity] =
     useState("");
 
   const [citySearch, setCitySearch] =
     useState("");
 
+  const [loadingCities, setLoadingCities] =
+    useState(false);
+
+
+  /* ============================================================
+     PHONE
+  ============================================================ */
+
+  const [phone, setPhone] =
+    useState("");
+
+
+  /* ============================================================
+     MAP
+  ============================================================ */
 
   const [coordinates, setCoordinates] =
-    useState<Coordinates>(DEFAULT_LOCATION);
+    useState<Coordinates>(
+      DEFAULT_LOCATION
+    );
 
-  const [showMap, setShowMap] = useState(false);
+  const [showMap, setShowMap] =
+    useState(false);
 
 
-  const [bloodType, setBloodType] = useState("O+");
+  /* ============================================================
+     PERSONAL INFORMATION
+  ============================================================ */
+
+  const [bloodType, setBloodType] =
+    useState("O+");
 
   const [selectedAllergies, setSelectedAllergies] =
     useState<string[]>(["None"]);
@@ -144,19 +195,51 @@ export default function ProfileDetailsScreen({
   const [showAllergies, setShowAllergies] =
     useState(false);
 
-  const [height, setHeight] = useState(165);
 
-  const [weight, setWeight] = useState(65);
+  /* ============================================================
+     HEIGHT / WEIGHT
+  ============================================================ */
 
-  const [notes, setNotes] = useState("");
+  const [height, setHeight] =
+    useState(165);
 
+  const [weight, setWeight] =
+    useState(65);
+
+  const [editingMeasurement, setEditingMeasurement] =
+    useState<"height" | "weight" | null>(null);
+
+  const [measurementInput, setMeasurementInput] =
+    useState("");
+
+
+  /* ============================================================
+     NOTES
+  ============================================================ */
+
+  const [notes, setNotes] =
+    useState("");
+
+
+  /* ============================================================
+     PICKER
+  ============================================================ */
 
   const [openPicker, setOpenPicker] =
     useState<string | null>(null);
 
 
+  /* ============================================================
+     PROFILE IMAGE
+  ============================================================ */
+
   const [profileImage, setProfileImage] =
     useState("");
+
+
+  /* ============================================================
+     INSURANCE
+  ============================================================ */
 
   const [insuranceProvider, setInsuranceProvider] =
     useState("");
@@ -164,13 +247,23 @@ export default function ProfileDetailsScreen({
   const [insuranceCard, setInsuranceCard] =
     useState("");
 
+  const [policyNumber, setPolicyNumber] =
+    useState("");
+
+
+  /* ============================================================
+     FETCH COUNTRIES
+  ============================================================ */
 
   useEffect(() => {
     fetchCountries();
   }, []);
 
+
   const fetchCountries = async () => {
+
     try {
+
       setLoadingCountries(true);
 
       const response = await fetch(
@@ -183,95 +276,136 @@ export default function ProfileDetailsScreen({
         );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
-      const formattedCountries: Country[] = data
-        .map((item: any) => {
-          let callingCode = "";
 
-          if (
-            item.idd?.root &&
-            item.idd?.suffixes &&
-            item.idd.suffixes.length > 0
-          ) {
-            callingCode =
-              item.idd.root +
-              item.idd.suffixes[0];
-          } else if (item.idd?.root) {
-            callingCode = item.idd.root;
-          }
+      const formattedCountries: Country[] =
+        data
+          .map((item: any) => {
 
-          return {
-            name: item.name?.common || "",
-            flag: item.flag || "🌍",
-            code: callingCode,
-          };
-        })
-        .filter(
-          (item: Country) =>
-            item.name.length > 0
-        )
-        .sort((a: Country, b: Country) =>
-          a.name.localeCompare(b.name)
-        );
+            let callingCode = "";
 
-      setCountries(formattedCountries);
+            if (
+              item.idd?.root &&
+              Array.isArray(
+                item.idd?.suffixes
+              ) &&
+              item.idd.suffixes.length > 0
+            ) {
 
-      /* Default Rwanda */
+              callingCode =
+                item.idd.root +
+                item.idd.suffixes[0];
 
-      const rwanda =
-        formattedCountries.find(
-          (item) => item.name === "Rwanda"
-        );
+            } else if (
+              item.idd?.root
+            ) {
 
-      if (rwanda) {
-        setCountry(rwanda);
-      } else if (
-        formattedCountries.length > 0
-      ) {
-        setCountry(formattedCountries[0]);
-      }
+              callingCode =
+                item.idd.root;
+            }
+
+            return {
+              name:
+                item.name?.common ||
+                "",
+              flag:
+                item.flag ||
+                "🌍",
+              code:
+                callingCode,
+            };
+          })
+          .filter(
+            (item: Country) =>
+              item.name.length > 0
+          )
+          .sort(
+            (
+              a: Country,
+              b: Country
+            ) =>
+              a.name.localeCompare(
+                b.name
+              )
+          );
+
+
+      setCountries(
+        formattedCountries
+      );
+
     } catch (error) {
+
       console.warn(
-        "Error fetching countries:",
+        "Country API error:",
         error
       );
+
+      Alert.alert(
+        "Unable to load countries",
+        "Please check your internet connection and try again."
+      );
+
     } finally {
+
       setLoadingCountries(false);
     }
   };
 
 
-  useEffect(() => {
-    if (country?.name) {
-      fetchCities(country.name);
-    }
-  }, [country?.name]);
+  /* ============================================================
+     FETCH CITIES WHEN COUNTRY CHANGES
+  ============================================================ */
 
-  const fetchCities = async (
-    countryName: string
-  ) => {
-    try {
-      setLoadingCities(true);
+  useEffect(() => {
+
+    if (!country) {
 
       setCities([]);
       setCity("");
 
-      const response = await fetch(
-        "https://countriesnow.space/api/v0.1/countries/cities",
-        {
-          method: "POST",
+      return;
+    }
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+    fetchCities(
+      country.name
+    );
 
-          body: JSON.stringify({
-            country: countryName,
-          }),
-        }
-      );
+  }, [country]);
+
+
+  const fetchCities = async (
+    countryName: string
+  ) => {
+
+    try {
+
+      setLoadingCities(true);
+
+      setCities([]);
+
+      setCity("");
+
+      const response =
+        await fetch(
+          "https://countriesnow.space/api/v0.1/countries/cities",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              country:
+                countryName,
+            }),
+          }
+        );
+
 
       if (!response.ok) {
         throw new Error(
@@ -279,122 +413,221 @@ export default function ProfileDetailsScreen({
         );
       }
 
-      const data = await response.json();
+
+      const data =
+        await response.json();
+
 
       if (
         !data.error &&
         Array.isArray(data.data)
       ) {
-        const sortedCities = data.data.sort(
-          (a: string, b: string) =>
-            a.localeCompare(b)
+
+        const sortedCities =
+          [...data.data].sort(
+            (
+              a: string,
+              b: string
+            ) =>
+              a.localeCompare(b)
+          );
+
+        setCities(
+          sortedCities
         );
-
-        setCities(sortedCities);
-
-        if (sortedCities.length > 0) {
-          setCity(sortedCities[0]);
-        }
       }
+
     } catch (error) {
+
       console.warn(
-        "Error fetching cities:",
+        "City API error:",
         error
       );
 
       setCities([]);
+
+      Alert.alert(
+        "Unable to load cities",
+        `We could not load cities for ${countryName}. Please try again.`
+      );
+
     } finally {
+
       setLoadingCities(false);
     }
   };
 
 
+  /* ============================================================
+     CITY FILTER
+  ============================================================ */
+
+  const filteredCities =
+    useMemo(() => {
+
+      const search =
+        citySearch
+          .trim()
+          .toLowerCase();
+
+      if (!search) {
+        return cities;
+      }
+
+      return cities.filter(
+        (item) =>
+          item
+            .toLowerCase()
+            .includes(search)
+      );
+
+    }, [
+      cities,
+      citySearch,
+    ]);
+
+
+  /* ============================================================
+     PROFILE IMAGE
+  ============================================================ */
+
   const chooseImage = async () => {
+
     try {
+
       const result =
-        await DocumentPicker.getDocumentAsync({
-          type: [
-            "image/jpeg",
-            "image/png",
-          ],
-          copyToCacheDirectory: true,
-          multiple: false,
-        });
+        await DocumentPicker.getDocumentAsync(
+          {
+            type: [
+              "image/jpeg",
+              "image/png",
+            ],
+            copyToCacheDirectory:
+              true,
+            multiple: false,
+          }
+        );
+
 
       if (!result.canceled) {
+
         setProfileImage(
           result.assets[0].uri
         );
       }
+
     } catch (error) {
+
       console.warn(
-        "Unable to select image:",
+        "Image picker error:",
         error
       );
     }
   };
 
 
+  /* ============================================================
+     INSURANCE CARD
+  ============================================================ */
+
   const chooseInsuranceCard =
     async () => {
+
       try {
+
         const result =
-          await DocumentPicker.getDocumentAsync({
-            type: [
-              "image/jpeg",
-              "image/png",
-              "application/pdf",
-            ],
-            copyToCacheDirectory: true,
-            multiple: false,
-          });
+          await DocumentPicker.getDocumentAsync(
+            {
+              type: [
+                "image/jpeg",
+                "image/png",
+                "application/pdf",
+              ],
+              copyToCacheDirectory:
+                true,
+              multiple: false,
+            }
+          );
+
 
         if (!result.canceled) {
+
           setInsuranceCard(
             result.assets[0].name
           );
         }
+
       } catch (error) {
+
         console.warn(
-          "Unable to select insurance card:",
+          "Insurance card picker error:",
           error
         );
       }
     };
 
+
+  /* ============================================================
+     ALLERGIES
+  ============================================================ */
+
   const toggleAllergy = (
     value: string
   ) => {
-    setSelectedAllergies((current) => {
-      if (value === "None") {
-        return current.includes("None")
-          ? []
-          : ["None"];
-      }
 
-      if (current.includes(value)) {
-        return current.filter(
-          (item) => item !== value
-        );
-      }
+    setSelectedAllergies(
+      (current) => {
 
-      return [
-        ...current.filter(
-          (item) => item !== "None"
-        ),
-        value,
-      ];
-    });
+        if (
+          value === "None"
+        ) {
+
+          return current.includes(
+            "None"
+          )
+            ? []
+            : ["None"];
+        }
+
+
+        if (
+          current.includes(value)
+        ) {
+
+          return current.filter(
+            (item) =>
+              item !== value
+          );
+        }
+
+
+        return [
+          ...current.filter(
+            (item) =>
+              item !== "None"
+          ),
+          value,
+        ];
+      }
+    );
   };
 
+
+  /* ============================================================
+     MAP
+  ============================================================ */
 
   const handleMapPress = (
     event: MapPressEvent
   ) => {
+
     const {
       latitude,
       longitude,
-    } = event.nativeEvent.coordinate;
+    } =
+      event.nativeEvent
+        .coordinate;
+
 
     setCoordinates({
       latitude,
@@ -403,82 +636,382 @@ export default function ProfileDetailsScreen({
   };
 
 
-  const filteredCountries =
-    countries.filter((item) =>
-      item.name
-        .toLowerCase()
-        .includes(
-          countrySearch.toLowerCase()
-        )
+  /* ============================================================
+     HEIGHT / WEIGHT EDITOR
+  ============================================================ */
+
+  const openMeasurementEditor = (
+    type:
+      | "height"
+      | "weight"
+  ) => {
+
+    setEditingMeasurement(
+      type
     );
 
-  const filteredCities =
-    cities.filter((item) =>
-      item
-        .toLowerCase()
-        .includes(
-          citySearch.toLowerCase()
-        )
-    );
 
+    setMeasurementInput(
+      type === "height"
+        ? String(height)
+        : String(weight)
+    );
+  };
+
+
+  const closeMeasurementEditor =
+    () => {
+
+      setEditingMeasurement(
+        null
+      );
+
+      setMeasurementInput("");
+    };
+
+
+  const saveMeasurement = () => {
+
+    const cleaned =
+      measurementInput
+        .replace(",", ".")
+        .trim();
+
+
+    const numericValue =
+      Number(cleaned);
+
+
+    if (
+      !Number.isFinite(
+        numericValue
+      )
+    ) {
+
+      Alert.alert(
+        "Invalid value",
+        "Please enter a valid number."
+      );
+
+      return;
+    }
+
+
+    /* HEIGHT */
+
+    if (
+      editingMeasurement ===
+      "height"
+    ) {
+
+      if (
+        numericValue < 100 ||
+        numericValue > 220
+      ) {
+
+        Alert.alert(
+          "Invalid height",
+          "Height must be between 100 and 220 cm."
+        );
+
+        return;
+      }
+
+
+      setHeight(
+        Math.round(
+          numericValue
+        )
+      );
+    }
+
+
+    /* WEIGHT */
+
+    if (
+      editingMeasurement ===
+      "weight"
+    ) {
+
+      if (
+        numericValue < 30 ||
+        numericValue > 200
+      ) {
+
+        Alert.alert(
+          "Invalid weight",
+          "Weight must be between 30 and 200 kg."
+        );
+
+        return;
+      }
+
+
+      setWeight(
+        Math.round(
+          numericValue * 10
+        ) / 10
+      );
+    }
+
+
+    closeMeasurementEditor();
+  };
+
+
+  /* ============================================================
+     PHONE
+  ============================================================ */
+
+  const handlePhoneChange =
+    (text: string) => {
+
+      /*
+       * Keep numbers only.
+       * Maximum exactly 9 digits.
+       */
+
+      const digitsOnly =
+        text.replace(
+          /[^0-9]/g,
+          ""
+        );
+
+
+      setPhone(
+        digitsOnly.slice(
+          0,
+          9
+        )
+      );
+    };
+
+
+  /* ============================================================
+     VALIDATION
+  ============================================================ */
+
+  const validateProfile = () => {
+
+    const errors: string[] = [];
+
+
+    if (!country) {
+      errors.push(
+        "Country"
+      );
+    }
+
+
+    if (!city) {
+      errors.push(
+        "City"
+      );
+    }
+
+
+    if (!phone) {
+
+      errors.push(
+        "Phone number"
+      );
+
+    } else if (
+      phone.length !== 9
+    ) {
+
+      errors.push(
+        "Phone number must contain exactly 9 digits"
+      );
+    }
+
+
+    if (
+      height < 100 ||
+      height > 220
+    ) {
+
+      errors.push(
+        "Height"
+      );
+    }
+
+
+    if (
+      weight < 30 ||
+      weight > 200
+    ) {
+
+      errors.push(
+        "Weight"
+      );
+    }
+
+
+    if (
+      errors.length > 0
+    ) {
+
+      Alert.alert(
+        "Complete your profile",
+        `Please complete the following:\n\n${errors
+          .map(
+            (item) =>
+              `• ${item}`
+          )
+          .join("\n")}`
+      );
+
+      return false;
+    }
+
+
+    return true;
+  };
+
+
+  /* ============================================================
+     CONTINUE
+  ============================================================ */
+
+  const handleContinue = () => {
+
+    if (
+      !validateProfile()
+    ) {
+      return;
+    }
+
+
+    /*
+     * All required information
+     * has been entered.
+     */
+
+    navigation.navigate(
+      "ChooseAvatar"
+    );
+  };
+
+
+  /* ============================================================
+     RENDER
+  ============================================================ */
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+
+    <SafeAreaView
+      style={styles.container}
+    >
+
+      <StatusBar
+        style="light"
+      />
+
 
       <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={
+          styles.content
+        }
+        showsVerticalScrollIndicator={
+          false
+        }
         keyboardShouldPersistTaps="handled"
       >
 
-        <View style={styles.header}>
-          <View style={styles.avatarWrapper}>
-            <View style={styles.avatar}>
+
+        {/* ======================================================
+            HEADER
+        ====================================================== */}
+
+        <View
+          style={styles.header}
+        >
+
+          <View
+            style={
+              styles.avatarWrapper
+            }
+          >
+
+            <View
+              style={styles.avatar}
+            >
+
               {profileImage ? (
+
                 <Image
                   source={{
                     uri: profileImage,
                   }}
-                  style={styles.avatarImage}
+                  style={
+                    styles.avatarImage
+                  }
                 />
+
               ) : (
+
                 <Ionicons
                   name="person"
                   size={40}
                   color="#2F80ED"
                 />
+
               )}
+
             </View>
 
+
             <Pressable
-              style={styles.uploadButton}
-              onPress={chooseImage}
+              style={
+                styles.uploadButton
+              }
+              onPress={
+                chooseImage
+              }
             >
+
               <Feather
                 name="upload"
                 size={14}
                 color="#17213B"
               />
+
             </Pressable>
+
           </View>
 
-          <Text style={styles.title}>
+
+          <Text
+            style={styles.title}
+          >
             Please confirm and fill{"\n"}
             your identity below
           </Text>
 
-          <Text style={styles.description}>
-            This information helps us personalize
-            your health experience.
+
+          <Text
+            style={
+              styles.description
+            }
+          >
+            This information helps us
+            personalize your health
+            experience.
           </Text>
+
         </View>
 
+
+        {/* ======================================================
+            ACCOUNT
+        ====================================================== */}
 
         <SectionTitle
           label="Account"
           icon="person-outline"
         />
+
 
         <Field
           label="Full name"
@@ -486,11 +1019,13 @@ export default function ProfileDetailsScreen({
           value="Umwizerwa Ruth"
         />
 
+
         <Field
           label="Username"
           icon="at-outline"
           value="@umwizerwaruth"
         />
+
 
         <PickerField
           label="Gender"
@@ -498,129 +1033,199 @@ export default function ProfileDetailsScreen({
           value={gender}
           options={genders}
           pickerKey="gender"
-          openPicker={openPicker}
-          setOpenPicker={setOpenPicker}
-          onSelect={setGender}
+          openPicker={
+            openPicker
+          }
+          setOpenPicker={
+            setOpenPicker
+          }
+          onSelect={
+            setGender
+          }
         />
+
 
         <DateField
           value={dateOfBirth}
           onPress={() =>
-            setShowDatePicker(true)
+            setShowDatePicker(
+              true
+            )
           }
         />
 
+
         {showDatePicker && (
+
           <DateTimePicker
-            value={dateOfBirth}
+            value={
+              dateOfBirth
+            }
             mode="date"
-            maximumDate={new Date()}
+            maximumDate={
+              new Date()
+            }
             onChange={(
-              _,
+              _event,
               selectedDate
             ) => {
-              setShowDatePicker(false);
 
-              if (selectedDate) {
+              setShowDatePicker(
+                false
+              );
+
+
+              if (
+                selectedDate
+              ) {
+
                 setDateOfBirth(
                   selectedDate
                 );
               }
             }}
           />
+
         )}
 
+
+        {/* ======================================================
+            PERSONAL INFO
+        ====================================================== */}
 
         <SectionTitle
           label="Personal info"
           icon="heart-outline"
         />
 
-        <Text style={styles.subTitle}>
+
+        <Text
+          style={styles.subTitle}
+        >
           Address & contact
         </Text>
 
-        {/* COUNTRY */}
 
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Country
+        {/* ======================================================
+            COUNTRY
+        ====================================================== */}
+
+        <View
+          style={styles.field}
+        >
+
+          <Text
+            style={styles.label}
+          >
+            Country *
           </Text>
+
 
           <Pressable
             style={styles.input}
+            disabled={
+              loadingCountries
+            }
             onPress={() =>
               setOpenPicker(
-                openPicker === "country"
+                openPicker ===
+                  "country"
                   ? null
                   : "country"
               )
             }
           >
-            <Text style={styles.countryFlag}>
-              {country?.flag || "🌍"}
+
+            <Text
+              style={
+                styles.countryFlag
+              }
+            >
+              {country?.flag ||
+                "🌍"}
             </Text>
 
-            <Text style={styles.pickerValue}>
+
+            <Text
+              style={
+                styles.pickerValue
+              }
+            >
               {loadingCountries
                 ? "Loading countries..."
                 : country?.name ||
                   "Select country"}
             </Text>
 
+
             <Ionicons
               name={
-                openPicker === "country"
+                openPicker ===
+                "country"
                   ? "chevron-up"
                   : "chevron-down"
               }
               size={16}
               color="#9AA3B2"
             />
+
           </Pressable>
 
-          {openPicker === "country" && (
-            <View
-              style={styles.dropdownContainer}
-            >
-              <View
-                style={styles.searchContainer}
-              >
-                <Ionicons
-                  name="search-outline"
-                  size={18}
-                  color="#9AA3B2"
-                />
 
-                <TextInput
-                  value={countrySearch}
-                  onChangeText={
-                    setCountrySearch
-                  }
-                  placeholder="Search country..."
-                  placeholderTextColor="#9AA3B2"
-                  style={styles.searchInput}
-                />
-              </View>
+          {/* COUNTRY LIST */}
+
+          {openPicker ===
+            "country" && (
+
+            <View
+              style={
+                styles.dropdownContainer
+              }
+            >
 
               <ScrollView
-                style={styles.dropdownScroll}
+                style={
+                  styles.dropdownScroll
+                }
                 nestedScrollEnabled
+                showsVerticalScrollIndicator
                 keyboardShouldPersistTaps="handled"
               >
-                {filteredCountries.map(
+
+                {countries.map(
                   (item) => (
+
                     <Pressable
-                      key={item.name}
+                      key={`${item.name}-${item.code}`}
                       style={
                         styles.pickerOption
                       }
                       onPress={() => {
-                        setCountry(item);
-                        setCountrySearch("");
-                        setOpenPicker(null);
+
+                        setCountry(
+                          item
+                        );
+
+                        /*
+                         * Changing country means
+                         * previous city and phone
+                         * are no longer valid.
+                         */
+
+                        setCity("");
+
+                        setCitySearch(
+                          ""
+                        );
+
+                        setPhone("");
+
+                        setOpenPicker(
+                          null
+                        );
                       }}
                     >
+
                       <Text
                         style={
                           styles.countryFlag
@@ -629,124 +1234,222 @@ export default function ProfileDetailsScreen({
                         {item.flag}
                       </Text>
 
+
                       <Text
                         style={
                           styles.pickerOptionText
+                        }
+                        numberOfLines={
+                          1
                         }
                       >
                         {item.name}
                       </Text>
 
+
                       <Text
-                        style={styles.phoneCode}
+                        style={
+                          styles.phoneCode
+                        }
                       >
-                        {item.code}
+                        {item.code ||
+                          "—"}
                       </Text>
+
                     </Pressable>
+
                   )
                 )}
 
-                {filteredCountries.length ===
-                  0 && (
+
+                {countries.length ===
+                  0 &&
+                  !loadingCountries && (
+
                   <Text
-                    style={styles.emptyText}
+                    style={
+                      styles.emptyText
+                    }
                   >
-                    No countries found
+                    No countries available.
                   </Text>
+
                 )}
+
               </ScrollView>
+
             </View>
+
           )}
+
         </View>
 
-        {/* CITY */}
 
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            City
+        {/* ======================================================
+            CITY
+        ====================================================== */}
+
+        <View
+          style={styles.field}
+        >
+
+          <Text
+            style={styles.label}
+          >
+            City *
           </Text>
 
+
           <Pressable
-            style={styles.input}
+            style={[
+              styles.input,
+              !country &&
+                styles.inputDisabled,
+            ]}
             disabled={
-              !country || loadingCities
+              !country ||
+              loadingCities
             }
             onPress={() =>
               setOpenPicker(
-                openPicker === "city"
+                openPicker ===
+                  "city"
                   ? null
                   : "city"
               )
             }
           >
+
             <Ionicons
               name="location-outline"
               size={16}
               color="#9AA3B2"
             />
 
-            <Text style={styles.pickerValue}>
-              {loadingCities
+
+            <Text
+              style={[
+                styles.pickerValue,
+                !city &&
+                  styles.placeholderText,
+              ]}
+            >
+              {!country
+                ? "Select country first"
+                : loadingCities
                 ? "Loading cities..."
-                : city || "Select city"}
+                : city ||
+                  "Select city"}
             </Text>
 
-            <Ionicons
-              name={
-                openPicker === "city"
-                  ? "chevron-up"
-                  : "chevron-down"
-              }
-              size={16}
-              color="#9AA3B2"
-            />
+
+            {loadingCities ? (
+
+              <ActivityIndicator
+                size="small"
+                color="#2F80ED"
+              />
+
+            ) : (
+
+              <Ionicons
+                name={
+                  openPicker ===
+                  "city"
+                    ? "chevron-up"
+                    : "chevron-down"
+                }
+                size={16}
+                color="#9AA3B2"
+              />
+
+            )}
+
           </Pressable>
 
-          {openPicker === "city" && (
+
+          {/* CITY LIST */}
+
+          {openPicker ===
+            "city" &&
+            country && (
+
             <View
-              style={styles.dropdownContainer}
+              style={
+                styles.dropdownContainer
+              }
             >
+
+              {/* CITY SEARCH ONLY */}
+
               <View
-                style={styles.searchContainer}
+                style={
+                  styles.searchContainer
+                }
               >
+
                 <Ionicons
                   name="search-outline"
                   size={18}
                   color="#9AA3B2"
                 />
 
+
                 <TextInput
-                  value={citySearch}
-                  onChangeText={setCitySearch}
+                  value={
+                    citySearch
+                  }
+                  onChangeText={
+                    setCitySearch
+                  }
                   placeholder="Search city..."
                   placeholderTextColor="#9AA3B2"
-                  style={styles.searchInput}
+                  style={
+                    styles.searchInput
+                  }
                 />
+
               </View>
 
+
               <ScrollView
-                style={styles.dropdownScroll}
+                style={
+                  styles.dropdownScroll
+                }
                 nestedScrollEnabled
                 keyboardShouldPersistTaps="handled"
               >
+
                 {filteredCities.map(
                   (item) => (
+
                     <Pressable
                       key={item}
                       style={
                         styles.pickerOption
                       }
                       onPress={() => {
-                        setCity(item);
-                        setCitySearch("");
-                        setOpenPicker(null);
+
+                        setCity(
+                          item
+                        );
+
+                        setCitySearch(
+                          ""
+                        );
+
+                        setOpenPicker(
+                          null
+                        );
                       }}
                     >
+
                       <Ionicons
                         name="location-outline"
                         size={16}
                         color="#2F80ED"
                       />
+
 
                       <Text
                         style={[
@@ -758,55 +1461,91 @@ export default function ProfileDetailsScreen({
                       >
                         {item}
                       </Text>
+
                     </Pressable>
+
                   )
                 )}
+
 
                 {!loadingCities &&
                   filteredCities.length ===
                     0 && (
-                    <Text
-                      style={styles.emptyText}
-                    >
-                      No cities found
-                    </Text>
-                  )}
+
+                  <Text
+                    style={
+                      styles.emptyText
+                    }
+                  >
+                    No cities found.
+                  </Text>
+
+                )}
+
               </ScrollView>
+
             </View>
+
           )}
+
         </View>
 
-        {/* MAP */}
 
-        <View style={styles.mapSection}>
-          <View style={styles.mapHeader}>
+        {/* ======================================================
+            MAP
+        ====================================================== */}
+
+        <View
+          style={
+            styles.mapSection
+          }
+        >
+
+          <View
+            style={
+              styles.mapHeader
+            }
+          >
+
             <View
-              style={styles.mapHeaderText}
+              style={
+                styles.mapHeaderText
+              }
             >
+
               <Text
-                style={styles.subTitle}
+                style={
+                  styles.subTitle
+                }
               >
                 Location on map
               </Text>
+
 
               <Text
                 style={
                   styles.mapDescription
                 }
               >
-                Tap anywhere on the map to
-                select your location.
+                Tap anywhere on the map
+                to select your location.
               </Text>
+
             </View>
 
+
             <Pressable
-              style={styles.mapButton}
+              style={
+                styles.mapButton
+              }
               onPress={() =>
                 setShowMap(
-                  (value) => !value
+                  (value) =>
+                    !value
                 )
               }
             >
+
               <Ionicons
                 name={
                   showMap
@@ -817,6 +1556,7 @@ export default function ProfileDetailsScreen({
                 color="#FFFFFF"
               />
 
+
               <Text
                 style={
                   styles.mapButtonText
@@ -826,13 +1566,20 @@ export default function ProfileDetailsScreen({
                   ? "Hide"
                   : "Open map"}
               </Text>
+
             </Pressable>
+
           </View>
 
+
           {showMap && (
+
             <View
-              style={styles.mapContainer}
+              style={
+                styles.mapContainer
+              }
             >
+
               <MapView
                 style={styles.map}
                 initialRegion={{
@@ -840,11 +1587,16 @@ export default function ProfileDetailsScreen({
                     coordinates.latitude,
                   longitude:
                     coordinates.longitude,
-                  latitudeDelta: 0.08,
-                  longitudeDelta: 0.08,
+                  latitudeDelta:
+                    0.08,
+                  longitudeDelta:
+                    0.08,
                 }}
-                onPress={handleMapPress}
+                onPress={
+                  handleMapPress
+                }
               >
+
                 <Marker
                   coordinate={{
                     latitude:
@@ -857,63 +1609,159 @@ export default function ProfileDetailsScreen({
                     "Selected location"
                   }
                   description={
-                    country?.name || ""
+                    country?.name ||
+                    ""
                   }
                 />
+
               </MapView>
 
+
               <View
-                style={styles.mapInfo}
+                style={
+                  styles.mapInfo
+                }
               >
+
                 <Ionicons
                   name="location"
                   size={15}
                   color="#2F80ED"
                 />
 
+
                 <Text
                   style={
                     styles.mapInfoText
                   }
-                  numberOfLines={1}
+                  numberOfLines={
+                    1
+                  }
                 >
                   {city ||
                     "Unknown city"}
+
                   {country
                     ? `, ${country.name}`
                     : ""}
                 </Text>
+
               </View>
+
             </View>
+
           )}
+
         </View>
 
-        {/* PHONE */}
 
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Phone number
+        {/* ======================================================
+            PHONE
+        ====================================================== */}
+
+        <View
+          style={styles.field}
+        >
+
+          <Text
+            style={styles.label}
+          >
+            Phone number *
           </Text>
 
-          <View style={styles.input}>
-            <Text
-              style={styles.countryCode}
+
+          <View
+            style={styles.input}
+          >
+
+            {/* COUNTRY CODE */}
+
+            <View
+              style={
+                styles.phoneCodeContainer
+              }
             >
-              {country?.code || "+"}
-            </Text>
+
+              <Text
+                style={
+                  styles.countryFlagSmall
+                }
+              >
+                {country?.flag ||
+                  "🌍"}
+              </Text>
+
+
+              <Text
+                style={
+                  styles.countryCode
+                }
+              >
+                {country?.code ||
+                  "+"}
+              </Text>
+
+            </View>
+
+
+            {/* PHONE */}
 
             <TextInput
               value={phone}
-              onChangeText={setPhone}
-              placeholder="Enter phone number"
+              onChangeText={
+                handlePhoneChange
+              }
+              placeholder={
+                country
+                  ? "Enter 9 digits"
+                  : "Select country first"
+              }
               placeholderTextColor="#9AA3B2"
-              keyboardType="phone-pad"
-              style={styles.textInput}
+              keyboardType="number-pad"
+              maxLength={9}
+              editable={
+                Boolean(country)
+              }
+              style={[
+                styles.textInput,
+                !country &&
+                  styles.textInputDisabled,
+              ]}
             />
+
+
+            {/* COUNTER */}
+
+            <Text
+              style={[
+                styles.phoneCounter,
+                phone.length ===
+                  9 &&
+                  styles.phoneCounterComplete,
+              ]}
+            >
+              {phone.length}/9
+            </Text>
+
           </View>
+
+
+          <Text
+            style={
+              styles.helperText
+            }
+          >
+            Enter exactly 9 digits.
+            The country code is added
+            automatically.
+          </Text>
+
         </View>
 
-        {/* BLOOD TYPE */}
+
+        {/* ======================================================
+            BLOOD TYPE
+        ====================================================== */}
 
         <PickerField
           label="Blood type"
@@ -921,32 +1769,55 @@ export default function ProfileDetailsScreen({
           value={bloodType}
           options={bloodTypes}
           pickerKey="blood"
-          openPicker={openPicker}
-          setOpenPicker={setOpenPicker}
-          onSelect={setBloodType}
+          openPicker={
+            openPicker
+          }
+          setOpenPicker={
+            setOpenPicker
+          }
+          onSelect={
+            setBloodType
+          }
         />
 
-        {/* ALLERGIES */}
 
-        <Text style={styles.subTitle}>
+        {/* ======================================================
+            ALLERGIES
+        ====================================================== */}
+
+        <Text
+          style={styles.subTitle}
+        >
           Allergies
         </Text>
 
-        <View style={styles.allergies}>
+
+        <View
+          style={styles.allergies}
+        >
+
           {(showAllergies
             ? allergyOptions
-            : allergyOptions.slice(0, 3)
+            : allergyOptions.slice(
+                0,
+                3
+              )
           ).map((item) => {
+
             const selected =
               selectedAllergies.includes(
                 item
               );
 
+
             return (
+
               <Pressable
                 key={item}
                 onPress={() =>
-                  toggleAllergy(item)
+                  toggleAllergy(
+                    item
+                  )
                 }
                 style={[
                   styles.allergy,
@@ -954,178 +1825,530 @@ export default function ProfileDetailsScreen({
                     styles.allergySelected,
                 ]}
               >
+
                 <Text
-                  style={styles.allergyText}
+                  style={
+                    styles.allergyText
+                  }
                 >
                   {item}
                 </Text>
+
               </Pressable>
+
             );
           })}
 
+
           <Pressable
-            style={styles.allergy}
+            style={
+              styles.allergy
+            }
             onPress={() =>
               setShowAllergies(
-                (value) => !value
+                (value) =>
+                  !value
               )
             }
           >
-            <Text style={styles.more}>
+
+            <Text
+              style={styles.more}
+            >
               {showAllergies
                 ? "Show less"
                 : "More"}
             </Text>
+
           </Pressable>
+
         </View>
 
-        {/* HEIGHT */}
 
-        <RangeRow
+        {/* ======================================================
+            HEIGHT
+        ====================================================== */}
+
+        <MeasurementRow
           label="Height"
           value={height}
-          unit="centimeter"
-          min={100}
-          max={220}
-          onChange={setHeight}
+          unit="cm"
+          minimum="100"
+          maximum="220"
+          onPress={() =>
+            openMeasurementEditor(
+              "height"
+            )
+          }
         />
 
-        {/* WEIGHT */}
 
-        <RangeRow
+        {/* ======================================================
+            WEIGHT
+        ====================================================== */}
+
+        <MeasurementRow
           label="Weight"
           value={weight}
-          unit="kilogram"
-          min={30}
-          max={200}
-          onChange={setWeight}
+          unit="kg"
+          minimum="30"
+          maximum="200"
+          onPress={() =>
+            openMeasurementEditor(
+              "weight"
+            )
+          }
         />
 
-        {/* NOTES */}
 
-        <Text style={styles.subTitle}>
+        {/* ======================================================
+            NOTES
+        ====================================================== */}
+
+        <Text
+          style={styles.subTitle}
+        >
           Additional notes
         </Text>
 
-        <View style={styles.notes}>
+
+        <View
+          style={styles.notes}
+        >
+
           <TextInput
             value={notes}
-            onChangeText={setNotes}
+            onChangeText={
+              setNotes
+            }
             multiline
             maxLength={500}
             textAlignVertical="top"
-            style={styles.notesInput}
+            style={
+              styles.notesInput
+            }
             placeholder="Tell us anything important about your health..."
             placeholderTextColor="#9AA3B2"
           />
 
-          <Text style={styles.counter}>
+
+          <Text
+            style={
+              styles.counter
+            }
+          >
             {notes.length}/500
           </Text>
+
         </View>
 
-        {/* INSURANCE */}
+
+        {/* ======================================================
+            INSURANCE
+        ====================================================== */}
 
         <SectionTitle
           label="Insurance"
           icon="lock-closed-outline"
         />
 
+
         <InsuranceProviderField
-          value={insuranceProvider}
-          onChange={setInsuranceProvider}
+          value={
+            insuranceProvider
+          }
+          onChange={
+            setInsuranceProvider
+          }
         />
 
-        <Field
-          label="Policy Number"
-          icon="key-outline"
-          placeholder="Enter policy number"
-        />
 
-        {/* INSURANCE CARD */}
+        <View
+          style={styles.field}
+        >
 
-        <Text style={styles.subTitle}>
+          <Text
+            style={styles.label}
+          >
+            Policy Number
+          </Text>
+
+
+          <View
+            style={styles.input}
+          >
+
+            <Ionicons
+              name="key-outline"
+              size={16}
+              color="#9AA3B2"
+            />
+
+
+            <TextInput
+              value={
+                policyNumber
+              }
+              onChangeText={
+                setPolicyNumber
+              }
+              placeholder="Enter policy number"
+              placeholderTextColor="#9AA3B2"
+              style={
+                styles.textInput
+              }
+            />
+
+          </View>
+
+        </View>
+
+
+        {/* ======================================================
+            INSURANCE CARD
+        ====================================================== */}
+
+        <Text
+          style={styles.subTitle}
+        >
           Insurance Card
         </Text>
 
-        <View style={styles.uploadBox}>
+
+        <View
+          style={
+            styles.uploadBox
+          }
+        >
+
           <Text
-            style={styles.uploadTitle}
+            style={
+              styles.uploadTitle
+            }
           >
             Browse your file to upload
           </Text>
+
 
           <Text
             style={
               styles.uploadDescription
             }
           >
-            Supported formats: jpg, png,
-            pdf
+            Supported formats:
+            jpg, png, pdf
           </Text>
 
+
           <Pressable
-            style={styles.browseButton}
-            onPress={chooseInsuranceCard}
+            style={
+              styles.browseButton
+            }
+            onPress={
+              chooseInsuranceCard
+            }
           >
+
             <Text
-              style={styles.browseText}
+              style={
+                styles.browseText
+              }
             >
               Browse File
             </Text>
+
           </Pressable>
 
+
           {insuranceCard ? (
+
             <Text
-              style={styles.selectedFile}
-              numberOfLines={1}
+              style={
+                styles.selectedFile
+              }
+              numberOfLines={
+                1
+              }
             >
-              Selected: {insuranceCard}
+              Selected:{" "}
+              {insuranceCard}
             </Text>
+
           ) : null}
+
         </View>
 
-        {/* CONTINUE */}
+
+        {/* ======================================================
+            CONTINUE
+        ====================================================== */}
 
         <Pressable
-          style={styles.continueButton}
-          onPress={() =>
-            navigation.navigate("ChooseAvatar")
+          style={
+            styles.continueButton
+          }
+          onPress={
+            handleContinue
           }
         >
+
           <Text
-            style={styles.continueText}
+            style={
+              styles.continueText
+            }
           >
             Continue
           </Text>
+
 
           <Ionicons
             name="arrow-forward"
             size={16}
             color="#FFFFFF"
           />
+
         </Pressable>
 
-        {/* SECURITY */}
 
-        <View style={styles.security}>
+        {/* ======================================================
+            SECURITY
+        ====================================================== */}
+
+        <View
+          style={
+            styles.security
+          }
+        >
+
           <Ionicons
             name="lock-closed-outline"
             size={14}
             color="#9AA3B2"
           />
 
+
           <Text
-            style={styles.securityText}
+            style={
+              styles.securityText
+            }
           >
-            Your personal information is
-            encrypted and secure.
+            Your personal information
+            is encrypted and secure.
           </Text>
+
         </View>
+
       </ScrollView>
+
+
+      {/* ========================================================
+          HEIGHT / WEIGHT MODAL
+      ======================================================== */}
+
+      <Modal
+        visible={
+          editingMeasurement !==
+          null
+        }
+        transparent
+        animationType="fade"
+        onRequestClose={
+          closeMeasurementEditor
+        }
+      >
+
+        <View
+          style={
+            styles.modalOverlay
+          }
+        >
+
+          <View
+            style={
+              styles.measurementModal
+            }
+          >
+
+            <View
+              style={
+                styles.modalHeader
+              }
+            >
+
+              <Text
+                style={
+                  styles.modalTitle
+                }
+              >
+                {editingMeasurement ===
+                "height"
+                  ? "Set your height"
+                  : "Set your weight"}
+              </Text>
+
+
+              <Pressable
+                onPress={
+                  closeMeasurementEditor
+                }
+              >
+
+                <Ionicons
+                  name="close"
+                  size={22}
+                  color="#FFFFFF"
+                />
+
+              </Pressable>
+
+            </View>
+
+
+            <Text
+              style={
+                styles.modalDescription
+              }
+            >
+              Enter your actual{" "}
+              {editingMeasurement ===
+              "height"
+                ? "height in centimeters"
+                : "weight in kilograms"}
+              .
+            </Text>
+
+
+            <View
+              style={
+                styles.measurementInputContainer
+              }
+            >
+
+              <TextInput
+                value={
+                  measurementInput
+                }
+                onChangeText={(text) => {
+
+                  if (
+                    editingMeasurement ===
+                    "height"
+                  ) {
+
+                    setMeasurementInput(
+                      text.replace(
+                        /[^0-9]/g,
+                        ""
+                      )
+                    );
+
+                  } else {
+
+                    const cleaned =
+                      text.replace(
+                        /[^0-9.]/g,
+                        ""
+                      );
+
+                    const parts =
+                      cleaned.split(
+                        "."
+                      );
+
+                    if (
+                      parts.length >
+                      2
+                    ) {
+                      return;
+                    }
+
+                    setMeasurementInput(
+                      cleaned
+                    );
+                  }
+                }}
+                keyboardType={
+                  editingMeasurement ===
+                  "weight"
+                    ? "decimal-pad"
+                    : "number-pad"
+                }
+                autoFocus
+                selectTextOnFocus
+                maxLength={6}
+                placeholder={
+                  editingMeasurement ===
+                  "height"
+                    ? "165"
+                    : "65"
+                }
+                placeholderTextColor="#667085"
+                style={
+                  styles.measurementInput
+                }
+              />
+
+
+              <Text
+                style={
+                  styles.measurementUnit
+                }
+              >
+                {editingMeasurement ===
+                "height"
+                  ? "cm"
+                  : "kg"}
+              </Text>
+
+            </View>
+
+
+            <Text
+              style={
+                styles.measurementRange
+              }
+            >
+              Allowed range:{" "}
+              {editingMeasurement ===
+              "height"
+                ? "100–220 cm"
+                : "30–200 kg"}
+            </Text>
+
+
+            <Pressable
+              style={
+                styles.saveMeasurementButton
+              }
+              onPress={
+                saveMeasurement
+              }
+            >
+
+              <Text
+                style={
+                  styles.saveMeasurementText
+                }
+              >
+                Save
+              </Text>
+
+            </Pressable>
+
+          </View>
+
+        </View>
+
+      </Modal>
+
     </SafeAreaView>
   );
 }
+
+
+/* ============================================================
+   SECTION TITLE
+============================================================ */
 
 function SectionTitle({
   label,
@@ -1134,23 +2357,38 @@ function SectionTitle({
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
 }) {
+
   return (
-    <View style={styles.sectionTitle}>
+
+    <View
+      style={
+        styles.sectionTitle
+      }
+    >
+
       <Ionicons
         name={icon}
         size={14}
         color="#9AA3B2"
       />
 
+
       <Text
-        style={styles.sectionTitleText}
+        style={
+          styles.sectionTitleText
+        }
       >
         {label}
       </Text>
+
     </View>
   );
 }
 
+
+/* ============================================================
+   DATE FIELD
+============================================================ */
 
 function DateField({
   value,
@@ -1159,36 +2397,57 @@ function DateField({
   value: Date;
   onPress: () => void;
 }) {
+
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>
+
+    <View
+      style={styles.field}
+    >
+
+      <Text
+        style={styles.label}
+      >
         Date of birth
       </Text>
+
 
       <Pressable
         style={styles.input}
         onPress={onPress}
       >
+
         <Ionicons
           name="calendar-outline"
           size={16}
           color="#9AA3B2"
         />
 
-        <Text style={styles.pickerValue}>
+
+        <Text
+          style={
+            styles.pickerValue
+          }
+        >
           {value.toLocaleDateString()}
         </Text>
 
+
         <Ionicons
           name="calendar-outline"
           size={16}
           color="#9AA3B2"
         />
+
       </Pressable>
+
     </View>
   );
 }
 
+
+/* ============================================================
+   NORMAL PICKER
+============================================================ */
 
 function PickerField({
   label,
@@ -1209,35 +2468,56 @@ function PickerField({
   setOpenPicker: (
     key: string | null
   ) => void;
-  onSelect: (value: string) => void;
+  onSelect: (
+    value: string
+  ) => void;
 }) {
+
   const isOpen =
-    openPicker === pickerKey;
+    openPicker ===
+    pickerKey;
+
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>
+
+    <View
+      style={styles.field}
+    >
+
+      <Text
+        style={styles.label}
+      >
         {label}
       </Text>
+
 
       <Pressable
         style={styles.input}
         onPress={() =>
           setOpenPicker(
-            isOpen ? null : pickerKey
+            isOpen
+              ? null
+              : pickerKey
           )
         }
       >
+
         <Ionicons
           name={icon}
           size={16}
           color="#9AA3B2"
         />
 
-        <Text style={styles.pickerValue}>
+
+        <Text
+          style={
+            styles.pickerValue
+          }
+        >
           {value ||
             `Select ${label.toLowerCase()}`}
         </Text>
+
 
         <Ionicons
           name={
@@ -1248,51 +2528,87 @@ function PickerField({
           size={16}
           color="#9AA3B2"
         />
+
       </Pressable>
 
+
       {isOpen && (
+
         <View
-          style={styles.dropdownContainer}
+          style={
+            styles.dropdownContainer
+          }
         >
+
           <ScrollView
-            style={styles.dropdownScroll}
+            style={
+              styles.dropdownScroll
+            }
             nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
           >
-            {options.map((option) => (
-              <Pressable
-                key={option}
-                style={styles.pickerOption}
-                onPress={() => {
-                  onSelect(option);
-                  setOpenPicker(null);
-                }}
-              >
-                <Text
+
+            {options.map(
+              (option) => (
+
+                <Pressable
+                  key={option}
                   style={
-                    styles.pickerOptionText
+                    styles.pickerOption
                   }
+                  onPress={() => {
+
+                    onSelect(
+                      option
+                    );
+
+                    setOpenPicker(
+                      null
+                    );
+                  }}
                 >
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
+
+                  <Text
+                    style={
+                      styles.pickerOptionText
+                    }
+                  >
+                    {option}
+                  </Text>
+
+                </Pressable>
+
+              )
+            )}
+
           </ScrollView>
+
         </View>
+
       )}
+
     </View>
   );
 }
 
+
+/* ============================================================
+   INSURANCE PROVIDER
+============================================================ */
 
 function InsuranceProviderField({
   value,
   onChange,
 }: {
   value: string;
-  onChange: (value: string) => void;
+  onChange: (
+    value: string
+  ) => void;
 }) {
+
   const [open, setOpen] =
     useState(false);
+
 
   const filteredProviders =
     insuranceProviders.filter(
@@ -1304,23 +2620,37 @@ function InsuranceProviderField({
           )
     );
 
+
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>
+
+    <View
+      style={styles.field}
+    >
+
+      <Text
+        style={styles.label}
+      >
         Insurance Provider
       </Text>
 
-      <View style={styles.input}>
+
+      <View
+        style={styles.input}
+      >
+
         <Ionicons
           name="briefcase-outline"
           size={16}
           color="#9AA3B2"
         />
 
+
         <TextInput
           value={value}
           onChangeText={(text) => {
+
             onChange(text);
+
             setOpen(true);
           }}
           onFocus={() =>
@@ -1328,14 +2658,21 @@ function InsuranceProviderField({
           }
           placeholder="Select or type insurance"
           placeholderTextColor="#9AA3B2"
-          style={styles.textInput}
+          style={
+            styles.textInput
+          }
         />
+
 
         <Pressable
           onPress={() =>
-            setOpen((current) => !current)
+            setOpen(
+              (current) =>
+                !current
+            )
           }
         >
+
           <Ionicons
             name={
               open
@@ -1345,29 +2682,48 @@ function InsuranceProviderField({
             size={16}
             color="#9AA3B2"
           />
+
         </Pressable>
+
       </View>
 
+
       {open && (
+
         <View
-          style={styles.dropdownContainer}
+          style={
+            styles.dropdownContainer
+          }
         >
+
           <ScrollView
-            style={styles.dropdownScroll}
+            style={
+              styles.dropdownScroll
+            }
             nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
           >
+
             {filteredProviders.map(
               (provider) => (
+
                 <Pressable
                   key={provider}
                   style={
                     styles.pickerOption
                   }
                   onPress={() => {
-                    onChange(provider);
-                    setOpen(false);
+
+                    onChange(
+                      provider
+                    );
+
+                    setOpen(
+                      false
+                    );
                   }}
                 >
+
                   <Text
                     style={
                       styles.pickerOptionText
@@ -1375,23 +2731,36 @@ function InsuranceProviderField({
                   >
                     {provider}
                   </Text>
+
                 </Pressable>
+
               )
             )}
+
           </ScrollView>
 
+
           <Text
-            style={styles.insuranceHint}
+            style={
+              styles.insuranceHint
+            }
           >
             Can't find yours? Type your
             own insurance company above.
           </Text>
+
         </View>
+
       )}
+
     </View>
   );
 }
 
+
+/* ============================================================
+   NORMAL FIELD
+============================================================ */
 
 function Field({
   label,
@@ -1404,111 +2773,189 @@ function Field({
   value?: string;
   placeholder?: string;
 }) {
+
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>
+
+    <View
+      style={styles.field}
+    >
+
+      <Text
+        style={styles.label}
+      >
         {label}
       </Text>
 
-      <View style={styles.input}>
+
+      <View
+        style={styles.input}
+      >
+
         <Ionicons
           name={icon}
           size={16}
           color="#9AA3B2"
         />
 
+
         <TextInput
           defaultValue={value}
-          placeholder={placeholder}
+          placeholder={
+            placeholder
+          }
           placeholderTextColor="#9AA3B2"
-          style={styles.textInput}
+          style={
+            styles.textInput
+          }
         />
+
 
         <Ionicons
           name="create-outline"
           size={16}
           color="#9AA3B2"
         />
+
       </View>
+
     </View>
   );
 }
 
 
-function RangeRow({
+/* ============================================================
+   HEIGHT / WEIGHT ROW
+============================================================ */
+
+function MeasurementRow({
   label,
   value,
   unit,
-  min,
-  max,
-  onChange,
+  minimum,
+  maximum,
+  onPress,
 }: {
   label: string;
   value: number;
   unit: string;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
+  minimum: string;
+  maximum: string;
+  onPress: () => void;
 }) {
-  const progress =
-    (value - min) / (max - min);
-
-  const safeProgress = Math.max(
-    0,
-    Math.min(1, progress)
-  );
 
   return (
-    <View style={styles.rangeRow}>
-      <View style={styles.rangeHeader}>
-        <Text style={styles.rangeLabel}>
-          {label}
-        </Text>
 
-        <Text style={styles.rangeValue}>
-          {value} {unit}
-        </Text>
+    <View
+      style={styles.rangeRow}
+    >
+
+      <View
+        style={styles.rangeHeader}
+      >
+
+        <View>
+
+          <Text
+            style={
+              styles.rangeLabel
+            }
+          >
+            {label} *
+          </Text>
+
+
+          <Text
+            style={
+              styles.measurementHint
+            }
+          >
+            Tap the value to edit
+          </Text>
+
+        </View>
+
+
+        <Pressable
+          style={
+            styles.rangeValueButton
+          }
+          onPress={onPress}
+        >
+
+          <Text
+            style={
+              styles.rangeValue
+            }
+          >
+            {value} {unit}
+          </Text>
+
+
+          <Ionicons
+            name="create-outline"
+            size={15}
+            color="#2F80ED"
+          />
+
+        </Pressable>
+
       </View>
 
-      <Pressable
+
+      <View
         style={styles.rangeTrack}
-        onPress={() => {
-          const next =
-            value >= max
-              ? min
-              : value + 1;
-
-          onChange(next);
-        }}
       >
-        <View
-          style={[
-            styles.rangeProgress,
-            {
-              width: `${
-                safeProgress * 100
-              }%`,
-            },
-          ]}
-        />
 
         <View
-          style={[
-            styles.rangeThumb,
-            {
-              left: `${
-                safeProgress * 100
-              }%`,
-            },
-          ]}
+          style={
+            styles.rangeProgress
+          }
         />
-      </Pressable>
+
+
+        <View
+          style={
+            styles.rangeThumb
+          }
+        />
+
+      </View>
+
+
+      <View
+        style={styles.rangeLimits}
+      >
+
+        <Text
+          style={
+            styles.rangeLimitText
+          }
+        >
+          {minimum} {unit}
+        </Text>
+
+
+        <Text
+          style={
+            styles.rangeLimitText
+          }
+        >
+          {maximum} {unit}
+        </Text>
+
+      </View>
+
     </View>
   );
 }
 
 
+/* ============================================================
+   STYLES
+============================================================ */
+
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: "#101828",
@@ -1519,6 +2966,9 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 40,
   },
+
+
+  /* HEADER */
 
   header: {
     alignItems: "center",
@@ -1586,6 +3036,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+
+  /* SECTION */
+
   sectionTitle: {
     flexDirection: "row",
     alignItems: "center",
@@ -1611,6 +3064,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+
+  /* FIELDS */
+
   field: {
     marginBottom: 12,
   },
@@ -1630,12 +3086,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
 
+  inputDisabled: {
+    opacity: 0.55,
+  },
+
   textInput: {
     flex: 1,
     minHeight: 44,
     paddingHorizontal: 9,
     color: "#FFFFFF",
     fontSize: 14,
+  },
+
+  textInputDisabled: {
+    color: "#667085",
   },
 
   pickerValue: {
@@ -1645,17 +3109,56 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  countryCode: {
-    marginRight: 8,
-    color: "#2F80ED",
-    fontSize: 14,
-    fontWeight: "700",
+  placeholderText: {
+    color: "#667085",
   },
+
+
+  /* COUNTRY */
 
   countryFlag: {
     marginRight: 8,
     fontSize: 18,
   },
+
+  countryFlagSmall: {
+    fontSize: 17,
+  },
+
+  countryCode: {
+    marginLeft: 5,
+    color: "#2F80ED",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  phoneCodeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 9,
+    borderRightWidth: 1,
+    borderRightColor: "#344054",
+  },
+
+  phoneCounter: {
+    marginLeft: 4,
+    color: "#9AA3B2",
+    fontSize: 11,
+  },
+
+  phoneCounterComplete: {
+    color: "#2F80ED",
+    fontWeight: "700",
+  },
+
+  helperText: {
+    marginTop: 5,
+    color: "#667085",
+    fontSize: 11,
+  },
+
+
+  /* DROPDOWN */
 
   dropdownContainer: {
     marginTop: 5,
@@ -1668,22 +3171,6 @@ const styles = StyleSheet.create({
 
   dropdownScroll: {
     maxHeight: 280,
-  },
-
-  searchContainer: {
-    height: 46,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#344054",
-  },
-
-  searchInput: {
-    flex: 1,
-    marginLeft: 8,
-    color: "#FFFFFF",
-    fontSize: 14,
   },
 
   pickerOption: {
@@ -1714,11 +3201,27 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  insuranceHint: {
-    padding: 12,
-    color: "#9AA3B2",
-    fontSize: 12,
+
+  /* CITY SEARCH */
+
+  searchContainer: {
+    height: 46,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#344054",
   },
+
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    color: "#FFFFFF",
+    fontSize: 14,
+  },
+
+
+  /* MAP */
 
   mapSection: {
     marginBottom: 12,
@@ -1791,6 +3294,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+
+  /* ALLERGIES */
+
   allergies: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1823,12 +3329,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+
+  /* HEIGHT / WEIGHT */
+
   rangeRow: {
-    marginBottom: 16,
+    marginBottom: 18,
   },
 
   rangeHeader: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
   },
 
@@ -1838,9 +3348,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  measurementHint: {
+    marginTop: 3,
+    color: "#667085",
+    fontSize: 10,
+  },
+
+  rangeValueButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 8,
+    backgroundColor: "#142A54",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+
   rangeValue: {
-    color: "#9AA3B2",
+    color: "#FFFFFF",
     fontSize: 14,
+    fontWeight: "600",
   },
 
   rangeTrack: {
@@ -1852,6 +3379,7 @@ const styles = StyleSheet.create({
   },
 
   rangeProgress: {
+    width: "55%",
     height: 8,
     borderRadius: 4,
     backgroundColor: "#2F80ED",
@@ -1859,6 +3387,7 @@ const styles = StyleSheet.create({
 
   rangeThumb: {
     position: "absolute",
+    left: "55%",
     top: -4,
     width: 16,
     height: 16,
@@ -1868,6 +3397,20 @@ const styles = StyleSheet.create({
     borderColor: "#2F80ED",
     backgroundColor: "#101828",
   },
+
+  rangeLimits: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 5,
+  },
+
+  rangeLimitText: {
+    color: "#667085",
+    fontSize: 10,
+  },
+
+
+  /* NOTES */
 
   notes: {
     minHeight: 100,
@@ -1889,6 +3432,15 @@ const styles = StyleSheet.create({
     color: "#9AA3B2",
     fontSize: 12,
     textAlign: "right",
+  },
+
+
+  /* INSURANCE */
+
+  insuranceHint: {
+    padding: 12,
+    color: "#9AA3B2",
+    fontSize: 12,
   },
 
   uploadBox: {
@@ -1935,6 +3487,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
+
+  /* CONTINUE */
+
   continueButton: {
     height: 48,
     flexDirection: "row",
@@ -1951,6 +3506,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+
+  /* SECURITY */
+
   security: {
     alignItems: "center",
     marginTop: 14,
@@ -1964,4 +3522,95 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     textAlign: "center",
   },
+
+
+  /* MEASUREMENT MODAL */
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor:
+      "rgba(0,0,0,0.72)",
+    paddingHorizontal: 25,
+  },
+
+  measurementModal: {
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: 16,
+    backgroundColor: "#101828",
+    borderWidth: 1,
+    borderColor: "#344054",
+    padding: 20,
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  modalTitle: {
+    color: "#FFFFFF",
+    fontSize: 19,
+    fontWeight: "700",
+  },
+
+  modalDescription: {
+    marginTop: 8,
+    color: "#98A2B3",
+    fontSize: 13,
+    lineHeight: 19,
+  },
+
+  measurementInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+    borderRadius: 10,
+    backgroundColor: "#1D2939",
+    borderWidth: 1,
+    borderColor: "#2F80ED",
+    paddingHorizontal: 14,
+  },
+
+  measurementInput: {
+    flex: 1,
+    height: 54,
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  measurementUnit: {
+    marginLeft: 8,
+    color: "#2F80ED",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+
+  measurementRange: {
+    marginTop: 8,
+    color: "#667085",
+    fontSize: 11,
+    textAlign: "center",
+  },
+
+  saveMeasurementButton: {
+    height: 48,
+    marginTop: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9,
+    backgroundColor: "#2F80ED",
+  },
+
+  saveMeasurementText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
 });

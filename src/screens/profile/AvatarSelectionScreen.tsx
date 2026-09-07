@@ -34,7 +34,7 @@ export default function AvatarSelectionScreen({
   const selected = AVATAR_OPTIONS[selectedAvatar];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar style="light" />
 
       <View style={styles.header}>
@@ -96,7 +96,7 @@ export default function AvatarSelectionScreen({
           Continue →
         </Text>
       </Pressable>
-    </SafeAreaView>
+    </View>
   );
 }
 

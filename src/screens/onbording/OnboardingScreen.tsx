@@ -38,7 +38,7 @@ export default function OnboardingScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.progressTrack}>
         <View
           style={[
@@ -105,7 +105,7 @@ export default function OnboardingScreen({ navigation }: Props) {
           {index + 1} / {SLIDES.length}
         </Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

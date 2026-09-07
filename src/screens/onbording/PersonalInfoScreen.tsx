@@ -71,8 +71,8 @@ const PersonalInfoScreen = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <StatusBar style={statusBarStyle} />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* <StatusBar style={statusBarStyle} /> */}
 
         {/* Back Icon and Skip Button with Horizontal Line */}
         <View style={styles.headerButtons}>
@@ -183,7 +183,7 @@ const PersonalInfoScreen = () => {
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
-      </SafeAreaView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };

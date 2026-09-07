@@ -316,7 +316,7 @@ export default function PrivacyPolicyScreen({
   };
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.safeArea,
         {
@@ -618,7 +618,7 @@ export default function PrivacyPolicyScreen({
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

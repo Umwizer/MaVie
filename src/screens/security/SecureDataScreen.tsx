@@ -24,7 +24,7 @@ export default function SecureDataScreen({ navigation }: Props) {
   const canContinue = privacyAccepted && termsAccepted;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -134,7 +134,7 @@ export default function SecureDataScreen({ navigation }: Props) {
           <Text style={styles.arrow}>→</Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

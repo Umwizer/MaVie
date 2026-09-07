@@ -38,7 +38,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <Pressable
         style={styles.skipButton}
         onPress={() => navigation.navigate("OnboardingSlides")}
@@ -125,7 +125,7 @@ export default function ChooseAvatarScreen({ navigation }: Props) {
           </View>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

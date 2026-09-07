@@ -20,7 +20,7 @@ export default function TrialStartedScreen({
   navigation,
 }: Props) {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         {/* PLUS LOGO */}
 
@@ -87,7 +87,7 @@ export default function TrialStartedScreen({
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

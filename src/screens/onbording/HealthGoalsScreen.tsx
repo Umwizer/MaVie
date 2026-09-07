@@ -107,7 +107,7 @@ const HealthGoalsScreen = () => {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         {
@@ -115,9 +115,9 @@ const HealthGoalsScreen = () => {
         },
       ]}
     >
-      <StatusBar
+      {/* <StatusBar
         style={isDarkMode ? "light" : "dark"}
-      />
+      /> */}
 
       {/* Header */}
       <View style={styles.header}>
@@ -283,7 +283,7 @@ const HealthGoalsScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -67,8 +67,8 @@ const GenderScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={statusBarStyle} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* <StatusBar style={statusBarStyle} /> */}
 
       {/* Header with Back and Dark Mode Toggle */}
       <View style={styles.header}>
@@ -141,7 +141,7 @@ const GenderScreen = () => {
           <Text style={[styles.preferNotToSayText, { color: colors.textPrimary }]}>✕  Prefer not to say</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

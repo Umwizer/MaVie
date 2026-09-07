@@ -27,7 +27,7 @@ export default function IdentityVerificationScreen({
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
 
         <View style={styles.statusArea}>
@@ -65,7 +65,7 @@ export default function IdentityVerificationScreen({
         </View>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -26,8 +26,9 @@ export default function ProfileSetupScreen({
   navigation,
 }: Props) {
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+    <View style={styles.container}>
+      {/* <StatusBar style="light" />
+       */}
 
       {/* ================= STEPS ================= */}
 
@@ -165,16 +166,12 @@ export default function ProfileSetupScreen({
           </View>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
-/* =====================================================
-   STYLES
-===================================================== */
 
 const styles = StyleSheet.create({
-  /* ================= CONTAINER ================= */
 
   container: {
     flex: 1,
@@ -182,7 +179,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 
-  /* ================= STEPS ================= */
 
   stepsContainer: {
     marginTop: 16,

@@ -99,7 +99,7 @@ export default function OtpVerificationScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
 
         {/* BACK */}
@@ -201,7 +201,7 @@ export default function OtpVerificationScreen({
         </View>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

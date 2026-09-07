@@ -4,8 +4,8 @@ import {
   Text,
   View,
   Pressable,
+  TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -38,12 +38,16 @@ export default function AsklepiosScoreScreen({
     : "You are unhealthy.\nScore is below optimal.";
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { backgroundColor },
       ]}
     >
+      {/* <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Text style={[styles.backButtonText, { color: colors.textPrimary }]}>←</Text>
+              </TouchableOpacity> */}
+
       <View style={styles.content}>
         <Text style={styles.title}>
           Asklepios Score
@@ -140,7 +144,7 @@ export default function AsklepiosScoreScreen({
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

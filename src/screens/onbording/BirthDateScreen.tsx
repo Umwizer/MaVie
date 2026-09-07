@@ -114,8 +114,8 @@ const BirthDateScreen = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={statusBarStyle} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* <StatusBar style={statusBarStyle} /> */}
 
       {/* Header: Back on left, Dark Mode Toggle + Skip on right */}
       <View style={styles.header}>
@@ -179,7 +179,7 @@ const BirthDateScreen = () => {
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

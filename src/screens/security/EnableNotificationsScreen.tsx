@@ -33,7 +33,7 @@ export default function EnableNotificationsScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.title}>
           Enable Notifications
@@ -117,7 +117,7 @@ export default function EnableNotificationsScreen({
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

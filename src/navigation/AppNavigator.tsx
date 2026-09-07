@@ -3,7 +3,7 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 
 import { AuthProvider } from "../context/AuthContext";
@@ -19,10 +19,6 @@ import GenderScreen from "../screens/onbording/GenderScreen";
 import BirthDateScreen from "../screens/onbording/BirthDateScreen";
 import PersonalInfoScreen from "../screens/onbording/PersonalInfoScreen";
 import HealthGoalsScreen from "../screens/onbording/HealthGoalsScreen";
-<<<<<<< HEAD
-=======
-import OnboardingScreen from "../screens/onbording/OnboardingReadyScreen";
->>>>>>> c4753424df0081b8b54ea2dffcbdf852360ff987
 
 // Authentication
 import LoginScreen from "../screens/auth/LoginScreen";
@@ -136,20 +132,15 @@ function RootNavigator() {
           name="HealthGoals"
           component={HealthGoalsScreen}
         />
-<<<<<<< HEAD
-
-        {/* Profile Setup */}
-
-        <Stack.Screen
-          name="OnboardingSlides"
-          component={OnboardingScreen}
-        />
-=======
         {/* <Stack.Screen
           name={"ProfileSetup" as keyof RootStackParamList}
           component={ProfileSetupScreen}
         /> */}
->>>>>>> c4753424df0081b8b54ea2dffcbdf852360ff987
+        <Stack.Screen
+          name="OnboardingSlides"
+          component={OnboardingScreen}
+        />
+
 
         <Stack.Screen
           name="ProfileDetails"
@@ -299,14 +290,62 @@ function RootNavigator() {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export default function AppNavigator() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaView style={{flex: 1}}>
       <AuthProvider>
-        <StatusBar style="light" />
+        {/* <StatusBar style="light" /> */}
 
         <RootNavigator />
       </AuthProvider>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }

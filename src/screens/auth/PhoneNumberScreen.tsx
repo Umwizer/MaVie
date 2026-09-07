@@ -8,8 +8,6 @@ import {
   View,
 } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import { Ionicons } from "@expo/vector-icons";
 
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -42,13 +40,24 @@ export default function PhoneNumberScreen({
        +250780000000
       */
 
-      const fullPhoneNumber = `+250${phoneNumber}`;
+     // 1. Remove all non-numeric characters (spaces, dashes, etc.)
+let cleanedNumber = phoneNumber.replace(/\D/g, '');
 
-      console.log(
-        "Sending OTP to:",
-        fullPhoneNumber
-      );
+// 2. Remove a leading '0' if the user typed the local format (e.g., 078...)
+if (cleanedNumber.startsWith('0')) {
+  cleanedNumber = cleanedNumber.substring(1);
+}
 
+// 3. Truncate the string to allow ONLY the first 9 numbers
+const restrictedNumber = cleanedNumber.substring(0, 9);
+
+// 4. Construct the final E.164 phone number format
+const fullPhoneNumber = `+250${restrictedNumber}`;
+
+console.log(
+  "Sending OTP to:",
+  fullPhoneNumber
+);
       /*
        We will replace this with Firebase verification
        in the next step.
@@ -66,7 +75,7 @@ export default function PhoneNumberScreen({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         {/* BACK BUTTON */}
 
@@ -156,7 +165,7 @@ export default function PhoneNumberScreen({
           )}
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

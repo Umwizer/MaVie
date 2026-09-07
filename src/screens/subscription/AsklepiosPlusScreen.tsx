@@ -32,7 +32,7 @@ export default function AsklepiosPlusScreen({
   navigation,
 }: Props) {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -107,7 +107,7 @@ export default function AsklepiosPlusScreen({
           </Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

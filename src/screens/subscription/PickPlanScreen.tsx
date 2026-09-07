@@ -23,7 +23,7 @@ export default function PickPlanScreen({
   const [monthly, setMonthly] = useState(true);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -178,7 +178,7 @@ export default function PickPlanScreen({
           </Pressable>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -24,7 +24,7 @@ export default function SecurityQuestions({ navigation }: Props) {
   const [answer, setAnswer] = useState("");
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
       <View style={styles.content}>
@@ -103,7 +103,7 @@ export default function SecurityQuestions({ navigation }: Props) {
   <Text style={styles.arrow}>→</Text>
 </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

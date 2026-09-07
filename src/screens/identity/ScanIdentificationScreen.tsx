@@ -25,7 +25,7 @@ export default function ScanIdentificationScreen({
 
   
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
 
         {/* HEADER */}
@@ -126,7 +126,7 @@ export default function ScanIdentificationScreen({
         </Pressable>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

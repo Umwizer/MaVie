@@ -52,8 +52,8 @@ const WelcomeScreen = () => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar style={statusBarStyle} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* <StatusBar style={statusBarStyle} /> */}
 
       {/* Top Progress Bar */}
       <View style={styles.progressContainer}>
@@ -120,7 +120,7 @@ const WelcomeScreen = () => {
         </TouchableOpacity>
 
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -151,7 +151,7 @@ export default function SignUpScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoDot} />
@@ -452,7 +452,7 @@ export default function SignUpScreen({ navigation }: Props) {
           </Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

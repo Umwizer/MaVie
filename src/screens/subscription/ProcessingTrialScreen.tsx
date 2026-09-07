@@ -27,7 +27,7 @@ export default function ProcessingTrialScreen({
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <ActivityIndicator
           size="large"
@@ -40,7 +40,7 @@ export default function ProcessingTrialScreen({
           asklepios plus free trial.
         </Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -59,10 +59,10 @@ const styles = StyleSheet.create({
 
   text: {
     color: "#FFFFFF",
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    lineHeight: 20,
+    fontWeight: "800",
     textAlign: "center",
-    marginTop: 25,
+    marginTop: 30,
   },
 });
