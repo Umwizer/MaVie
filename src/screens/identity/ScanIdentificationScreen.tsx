@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
 
   checkText: {
     color: "#D0D5DD",
-    fontSize: 10,
+    fontSize: 16,
   },
 
   /* BUTTON */

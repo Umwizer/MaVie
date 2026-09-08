@@ -3,10 +3,9 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
-
 import { AuthProvider } from "../context/AuthContext";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native";
 
 // Splash
 import SplashScreen from "../SplashScreen/SplashScreen";
@@ -67,6 +66,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function RootNavigator() {
   return (
     <NavigationContainer>
+
       <Stack.Navigator
         initialRouteName="Splash"
         screenOptions={{
@@ -286,6 +286,7 @@ function RootNavigator() {
 
       </Stack.Navigator>
     </NavigationContainer>
+   
   );
 }
 
@@ -340,12 +341,13 @@ function RootNavigator() {
 
 export default function AppNavigator() {
   return (
-    <SafeAreaView style={{flex: 1}}>
+    <SafeAreaView style={{ flex: 1 }}>
       <AuthProvider>
-        {/* <StatusBar style="light" /> */}
+        {/* <StatusBar style="dark" /> */}
 
         <RootNavigator />
       </AuthProvider>
-    </SafeAreaView>
+      </SafeAreaView>
+
   );
 }

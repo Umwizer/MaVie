@@ -8,7 +8,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 
 import type { RootStackParamList } from "../../navigation/types";
 
@@ -35,7 +35,7 @@ export default function AvatarSelectionScreen({
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      {/* <StatusBar style="light" /> */}
 
       <View style={styles.header}>
         <Pressable

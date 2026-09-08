@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingHorizontal: 25,
-    paddingTop: 35,
+    paddingTop: 40,
   },
 
   title: {
@@ -143,15 +143,15 @@ const styles = StyleSheet.create({
 
   subtitle: {
     color: "#98A2B3",
-    fontSize: 10,
-    lineHeight: 15,
+    fontSize: 16,
+    lineHeight: 17,
     textAlign: "center",
     marginTop: 12,
   },
 
   phone: {
-    width: 175,
-    height: 230,
+    width: 185,
+    height: 330,
     borderWidth: 2,
     borderColor: "#1B2942",
     borderRadius: 24,

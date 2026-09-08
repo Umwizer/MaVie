@@ -876,11 +876,11 @@ export default function ProfileDetailsScreen({
 
   const handleContinue = () => {
 
-    if (
-      !validateProfile()
-    ) {
-      return;
-    }
+    // if (
+    //   !validateProfile()
+    // ) {
+    //   return;
+    // }
 
 
     /*
@@ -900,7 +900,7 @@ export default function ProfileDetailsScreen({
 
   return (
 
-    <SafeAreaView
+    <View
       style={styles.container}
     >
 
@@ -2341,7 +2341,7 @@ export default function ProfileDetailsScreen({
 
       </Modal>
 
-    </SafeAreaView>
+    </View>
   );
 }
 

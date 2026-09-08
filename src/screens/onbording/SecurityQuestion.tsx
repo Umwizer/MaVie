@@ -25,7 +25,7 @@ export default function SecurityQuestions({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      {/* <StatusBar barStyle="light-content" /> */}
 
       <View style={styles.content}>
         {/* Question mark icon */}
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   questionSmall: {
     position: "absolute",
     color: "#D8E8FF",
-    fontSize: 38,
+    fontSize: 40,
     fontWeight: "700",
     left: "50%",
     top: 0,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   questionText: {
     flex: 1,
     color: "#DCE2EF",
-    fontSize: 9,
+    fontSize: 16,
     lineHeight: 13,
     paddingRight: 8,
   },
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
 
   answerLabel: {
     color: "#F2F4FA",
-    fontSize: 9,
+    fontSize: 13,
     fontWeight: "500",
     marginTop: 18,
     marginBottom: 7,
